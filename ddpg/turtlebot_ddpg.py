@@ -42,7 +42,7 @@ def clear_monitor_files(training_dir):
 
 if __name__ == '__main__':
 
-    train_indicator=1
+    train_indicator=0
 
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     env = gym.make('GazeboCircuit2TurtlebotLidarNn-v0')
