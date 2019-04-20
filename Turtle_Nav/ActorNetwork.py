@@ -4,7 +4,7 @@ from keras.initializers import normal, identity, uniform
 from keras.models import model_from_json
 from keras.models import Sequential, Model
 #from keras.engine.training import collect_trainable_weights
-from keras.layers import Dense, Flatten, Input, merge, Lambda, Activation, Lambda
+from keras.layers import Dense, Flatten, Input, merge, Lambda, Activation, Lambda, concatenate
 from keras.optimizers import Adam
 import tensorflow as tf
 import keras.backend as K

@@ -6,6 +6,16 @@ logger = logging.getLogger(__name__)
 # Gazebo
 # ----------------------------------------
 
+# New envs
+register(
+    id='GazeboCircuit2TurtlebotLidarDdpg-v0',
+    entry_point='gym_gazebo.envs.turtlebot:GazeboCircuit2TurtlebotLidarDdpgEnv',
+    max_episode_steps=1000,
+    # More arguments here
+)
+
+
+
 # Turtlebot envs
 register(
     id='GazeboKitchenTurtlebotLidar-v0',
