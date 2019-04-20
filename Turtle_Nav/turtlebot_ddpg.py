@@ -42,11 +42,11 @@ def clear_monitor_files(training_dir):
 
 if __name__ == '__main__':
 
-    train_indicator=1
+    train_indicator=0
 
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     #replace the action with the correct one
-    env = gym.make('GazeboCircuit2TurtlebotLidarNn-v0')
+    env = gym.make('GazeboCircuit2TurtlebotLidarDdpg-v0')
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
@@ -65,7 +65,8 @@ if __name__ == '__main__':
     state_dim = 14  #num of features in state
 
     EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 1
+    # episode_count = 1000 if (train_indicator) else 1
+    episode_count = 1000
     max_steps = 1000 
     reward = 0
     done = False
