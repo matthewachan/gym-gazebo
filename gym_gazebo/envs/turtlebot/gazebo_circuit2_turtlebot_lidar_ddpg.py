@@ -29,7 +29,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reward_range = (-np.inf, np.inf)
         self.prev_action = [0] * 2
 
-        self.prev_dist = np.inf 
+        self.prev_dist = 6
 
         # Goal position
         self.goal = Pose()
@@ -122,7 +122,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Build state
         dist, angle = self.get_polar_coords(odom)
-        self.prev_dist = dist
         state = np.concatenate((np.asarray(state), np.asarray(action), dist, angle), axis=None)
 
         self.prev_action = action
@@ -138,6 +137,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             reward = -200
 
         #print "REWARD: " + str(reward)
+        self.prev_dist = dist
 
         return np.asarray(state), reward, done, {}
 

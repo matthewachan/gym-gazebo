@@ -139,10 +139,11 @@ if __name__ == '__main__':
                 # print(a_t)
             else:
                 a_type = "Explore"
-                a_t = [np.random.uniform(-10,10, size=action_dim)]
-                # print("Explore: ")
-                # print(a_t)
-            #print(a_t)
+                a_t = [[np.random.uniform(0,1),np.random.uniform(-1,1)]]
+                print("Explore: ")
+                print(a_t)
+            print("action: ")
+            print(a_t)
             ob, r_t, done, info = env.step(a_t)
 
             s_t1 = np.array(ob)
