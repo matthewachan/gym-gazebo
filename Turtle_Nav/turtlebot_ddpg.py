@@ -135,13 +135,13 @@ if __name__ == '__main__':
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
-                print("Exploit: ")
-                print(a_t)
+                # print("Exploit: ")
+                # print(a_t)
             else:
                 a_type = "Explore"
                 a_t = [np.random.uniform(-10,10, size=action_dim)]
-                print("Explore: ")
-                print(a_t)
+                # print("Explore: ")
+                # print(a_t)
             #print(a_t)
             ob, r_t, done, info = env.step(a_t)
 
@@ -165,11 +165,15 @@ if __name__ == '__main__':
                 if dones[k]:
                     y_t[k] = rewards[k]
                 else:
+                    # print("rewards")
+                    # print(rewards[k])
+                    # print("target_q_values")
+                    # print(target_q_values[k])
                     y_t[k] = rewards[k] + GAMMA*target_q_values[k]
        
             if (train_indicator):
-                print "ACTIONS DeBUG: " + str(actions)
-                print "y_t DEBUG " + str(y_t)
+                #print "ACTIONS DeBUG: " + str(actions)
+                #print "y_t DEBUG " + str(y_t)
                 loss += critic.model.train_on_batch([states,actions], y_t) 
                 a_for_grad = actor.model.predict(states)
                 grads = critic.gradients(states, a_for_grad)

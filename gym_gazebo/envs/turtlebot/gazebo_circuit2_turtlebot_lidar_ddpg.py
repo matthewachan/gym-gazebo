@@ -64,7 +64,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             if (normalized < discretized_ranges[bucket]):
                 discretized_ranges[bucket] = normalized
 
-        print discretized_ranges
+        #print discretized_ranges
 
         return discretized_ranges,done
 
@@ -81,8 +81,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # action has linear and angular vel components
 
-        print "ACTION"
-        print action
+        #print "ACTION"
+        #print action
         lin_vel = action[0][0]
         ang_vel = action[0][1]
 
@@ -132,12 +132,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             # Straight reward = 5, Max angle reward = 0.5
             reward = 1 * (self.prev_dist - dist)
             # reward = round(15*(max_ang_speed - abs(ang_vel) +0.0335), 2)
-            # print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))
+            # #print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))
         else:
             # Collision reward
             reward = -200
 
-        print "REWARD: " + str(reward)
+        #print "REWARD: " + str(reward)
 
         return np.asarray(state), reward, done, {}
 
@@ -150,29 +150,30 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         goal_pos = [self.goal.position.x, self.goal.position.y]
         to_goal = np.subtract(goal_pos, robot_pos)
         dist = np.linalg.norm(to_goal)
-        print "DIST: " + str(dist)
+        #print "DIST: " + str(dist)
 
         # Get the robot's forward vector
         orientation = odom.pose.pose.orientation
         quaternion = [orientation.x, orientation.y, orientation.z, orientation.w]
         euler = tf.transformations.euler_from_quaternion(quaternion)
         yaw = euler[2]
-        print "YAW: " + str(yaw)
+        #print "YAW: " + str(yaw)
 
         forward = [1, 0]
         rot_mat = np.array([[np.cos(yaw), -np.sin(yaw)],
                 [np.sin(yaw), np.cos(yaw)]])
         robot_forward = rot_mat.dot(forward)
-        print robot_forward
+        #print robot_forward
 
         # Get the angle 
         angle = np.arccos(robot_forward.dot(to_goal) / (1 * dist))
-        print "ANGLE (in radians): " + str(angle)
+        #print "ANGLE (in radians): " + str(angle)
 
         return dist, angle
 
 
     def reset(self):
+        #print "RESET START"
         # Resets the state of the environment and returns an initial observation.
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
@@ -181,20 +182,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         except (rospy.ServiceException) as e:
             print ("/gazebo/reset_simulation service call failed")
 
-        # Read odometry data
-        odom = None
-        while odom is None:
-            try:
-                odom = rospy.wait_for_message('/odom', Odometry, timeout=5)
-            except:
-                pass
 
         # Reset odometry
         reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', Empty, queue_size=10)
         timer = time.time()
         while time.time() - timer < 0.25:
             reset_odom.publish(Empty())
-
+        #print "RESETTED ODOM"
         # Unpause simulation to make observation
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
@@ -210,6 +204,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             except:
                 pass
 
+        #print "GETTING ODOM"
+        # Read odometry data
+        odom = None
+        while odom is None:
+            try:
+                odom = rospy.wait_for_message('/odom', Odometry, timeout=5)
+            except:
+                pass
+        #print "GOT ODOM"
+
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             #resp_pause = pause.call()
@@ -217,6 +221,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         except (rospy.ServiceException) as e:
             print ("/gazebo/pause_physics service call failed")
 
+        #print "GOT HERE"
         state,done = self.calculate_observation(data)
         dist, angle = self.get_polar_coords(odom)
         state = np.concatenate((np.asarray(state), np.asarray(self.prev_action), dist, angle), axis=None)
