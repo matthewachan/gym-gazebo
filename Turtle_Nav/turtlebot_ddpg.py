@@ -42,7 +42,7 @@ def clear_monitor_files(training_dir):
 
 if __name__ == '__main__':
 
-    train_indicator=0
+    train_indicator=1
 
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     #replace the action with the correct one
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     state_dim = 14  #num of features in state
 
     EXPLORE = 200.0*50
-    # episode_count = 1000 if (train_indicator) else 1
-    episode_count = 1000
+    episode_count = 1000 if (train_indicator) else 1
+    # episode_count = 1000
     max_steps = 1000 
     reward = 0
     done = False
@@ -135,13 +135,13 @@ if __name__ == '__main__':
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
-                # print("Exploit: ")
-                # print(a_t)
+                print("Exploit: ")
+                print(a_t)
             else:
                 a_type = "Explore"
-                a_t = np.random.uniform(-10,10, size=action_dim)
-                # print("Explore: ")
-                # print(a_t)
+                a_t = [np.random.uniform(-10,10, size=action_dim)]
+                print("Explore: ")
+                print(a_t)
             #print(a_t)
             ob, r_t, done, info = env.step(a_t)
 
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             rewards = np.asarray([e[2] for e in batch])
             new_states = np.asarray([e[3] for e in batch])
             dones = np.asarray([e[4] for e in batch])
-            y_t = np.asarray([e[1] for e in batch])
+            y_t = np.asarray([e[2] for e in batch])
 
             #print(actor.target_model.predict(new_states))
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])  
@@ -168,6 +168,8 @@ if __name__ == '__main__':
                     y_t[k] = rewards[k] + GAMMA*target_q_values[k]
        
             if (train_indicator):
+                print "ACTIONS DeBUG: " + str(actions)
+                print "y_t DEBUG " + str(y_t)
                 loss += critic.model.train_on_batch([states,actions], y_t) 
                 a_for_grad = actor.model.predict(states)
                 grads = critic.gradients(states, a_for_grad)
