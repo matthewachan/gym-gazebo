@@ -2,7 +2,9 @@ import rospy
 import roslaunch
 import time
 import numpy as np
+import tf
 
+from numpy import cos, sin
 import gym
 from gym import utils, spaces
 from gym_gazebo.envs import gazebo_env
@@ -41,7 +43,17 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         for i, item in enumerate(data.ranges):
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return data.ranges[0:14],done
+        return list(data.ranges[0:20]),done
+
+    #takes in: the position of the robot
+    #theta = 0 => don't need to transform
+    def get_goal(self, x, y, t):
+        delta_x = self.goal.x - x
+        delta_y = self.goal.y - y
+        real_x = delta_x * cos(t) + delta_y * sin(t)
+        real_y = delta_y * cos(t) - delta_x * sin(t)
+        return real_x,real_y
+
 
     # Step the simulation forward in time
     def step(self, action):
@@ -50,7 +62,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Compute distance between Turtlebot and goal
         odom = self.get_odom()
         turtle_pos = odom.pose.pose.position
-
+        quaternion =odom.pose.pose.orientation
+        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
+        angle = tf.transformations.euler_from_quaternion(explicit_quat)
+        
+        stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
+        # print("angle is: ")
+        # print(angle)
+        # print(stx,sty)
+        # print(stx, sty, turtle_pos.x, turtle_pos.y, self.goal)
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
             
         # Edge case for initializing previous distance to the goal
@@ -72,6 +92,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
+        #print(state)
+        state+=[stx, sty]
+        #print(state)
 
         if not done:
             reward = -delta_dist
@@ -93,11 +116,23 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.reset_odom()
 
+        odom = self.get_odom()
+        turtle_pos = odom.pose.pose.position
+        quaternion =odom.pose.pose.orientation
+        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
+        angle = tf.transformations.euler_from_quaternion(explicit_quat)
+        # print("angle is: ")
+        # print(angle)
+        stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
+
         data = self.lidar_scan()
 
         self.pause_physics()
 
         state, done = self.check_collision(data)
+        #print(state)
+        state+=[stx, sty]
+        #print(state)
 
         return np.asarray(state)
 
