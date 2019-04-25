@@ -1,17 +1,19 @@
-import gym
 import rospy
 import roslaunch
 import time
 import numpy as np
 
+import gym
 from gym import utils, spaces
 from gym_gazebo.envs import gazebo_env
-from geometry_msgs.msg import Twist, Point
-from std_srvs.srv import Empty
-
-from sensor_msgs.msg import LaserScan
-
 from gym.utils import seeding
+
+from geometry_msgs.msg import Twist, Point
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import LaserScan
+import std_msgs.msg # Required for odom Empty message
+
+from std_srvs.srv import Empty
 
 class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
@@ -24,6 +26,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.reward_range = (-np.inf, np.inf)
         self.goal = Point(-6, 0, 0)
+        self.prev_dist = None
 
         self._seed()
 
@@ -43,6 +46,18 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def step(self, action):
         self.enable_physics()
 
+        # Compute distance between Turtlebot and goal
+        odom = self.get_odom()
+        turtle_pos = odom.pose.pose.position
+
+        dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
+            
+        # Edge case for initializing previous distance to the goal
+        if (self.prev_dist == None):
+            self.prev_dist = dist
+
+        delta_dist = dist - self.prev_dist
+
         max_ang_speed = 0.3
         ang_vel = (action[0][0]-10)*max_ang_speed*0.1 #from (-0.33 to + 0.33)
 
@@ -58,8 +73,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         state, done = self.check_collision(data)
 
         if not done:
+            if (delta_dist < 0):
+                reward = 5 
+            if (delta_dist >= 0):
+                reward = -5 
             # Straight reward = 5, Max angle reward = 0.5
-            reward = round(15* (max_ang_speed - abs(ang_vel) + 0.0335), 2)
+            # reward = round(15* (max_ang_speed - abs(ang_vel) + 0.0335), 2)
             # print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))
         else:
             reward = -200
@@ -71,6 +90,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reset_gazebo()
 
         self.enable_physics()
+
+        self.reset_odom()
 
         data = self.lidar_scan()
 
@@ -119,3 +140,21 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             except:
                 pass
         return data
+
+    # Retrieve odometry data
+    def get_odom(self):
+        odom = None
+        while odom is None:
+            try:
+                odom = rospy.wait_for_message('/odom', Odometry, timeout=5)
+            except:
+                pass
+        return odom
+
+    # Reset odometry (required when calling reset_gazebo)
+    def reset_odom(self):
+        reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', std_msgs.msg.Empty, queue_size=10)
+        timer = time.time()
+        # Takes some time to process Empty message and reset odometry
+        while time.time() - timer < 0.25:
+            reset_odom.publish(Empty())
