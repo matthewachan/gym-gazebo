@@ -73,10 +73,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         state, done = self.check_collision(data)
 
         if not done:
+            reward = -dist
             if (delta_dist < 0):
-                reward = 5 
-            if (delta_dist >= 0):
-                reward = -5 
+                reward = np.abs(reward)
             # Straight reward = 5, Max angle reward = 0.5
             # reward = round(15* (max_ang_speed - abs(ang_vel) + 0.0335), 2)
             # print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))

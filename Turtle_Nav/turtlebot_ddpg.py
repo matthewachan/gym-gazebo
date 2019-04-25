@@ -61,7 +61,7 @@ if __name__ == '__main__':
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
-    action_dim = 2  #angular vel + linear vel
+    action_dim = 1  #angular vel + linear vel
     state_dim = 14  #num of features in state
 
     EXPLORE = 200.0*50
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             rewards = np.asarray([e[2] for e in batch])
             new_states = np.asarray([e[3] for e in batch])
             dones = np.asarray([e[4] for e in batch])
-            y_t = np.asarray([e[2] for e in batch])
+            y_t = np.asarray([e[1] for e in batch])
 
             #print(actor.target_model.predict(new_states))
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])  

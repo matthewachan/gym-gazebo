@@ -47,9 +47,9 @@ class ActorNetwork(object):
         h0 = Dense(512, activation="relu", kernel_initializer="he_uniform")(S)
         h1 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h0)
         h2 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h1)
-        LinearV = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
+        # LinearV = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
         AngleV = Dense(1, activation='tanh', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
-        F = concatenate([LinearV, AngleV])
-        model = Model(input=S,output=F)
+        # F = concatenate([LinearV, AngleV])
+        model = Model(input=S,output=AngleV)
         return model, model.trainable_weights, S
 
