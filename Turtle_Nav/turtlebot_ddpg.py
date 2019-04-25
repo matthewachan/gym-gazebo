@@ -138,7 +138,7 @@ if __name__ == '__main__':
                 # print(a_t)
             else:
                 a_type = "Explore"
-                a_t = [[np.random.uniform(0,1),np.random.uniform(-1,1)]]
+                a_t = np.random.uniform(-10,10, size=action_dim)
                 # print("Explore: ")
                 # print(a_t)
             # print("action: ")
