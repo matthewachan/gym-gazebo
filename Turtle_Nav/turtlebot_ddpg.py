@@ -120,7 +120,6 @@ if __name__ == '__main__':
             print "start recording now"
             time.sleep(5)
         s_t = np.array(ob)
-        #print(s_t)
      
         total_reward = 0.
 
@@ -140,10 +139,10 @@ if __name__ == '__main__':
             else:
                 a_type = "Explore"
                 a_t = [[np.random.uniform(0,1),np.random.uniform(-1,1)]]
-                print("Explore: ")
-                print(a_t)
-            print("action: ")
-            print(a_t)
+                # print("Explore: ")
+                # print(a_t)
+            # print("action: ")
+            # print(a_t)
             ob, r_t, done, info = env.step(a_t)
 
             s_t1 = np.array(ob)
@@ -166,15 +165,9 @@ if __name__ == '__main__':
                 if dones[k]:
                     y_t[k] = rewards[k]
                 else:
-                    # print("rewards")
-                    # print(rewards[k])
-                    # print("target_q_values")
-                    # print(target_q_values[k])
                     y_t[k] = rewards[k] + GAMMA*target_q_values[k]
        
             if (train_indicator):
-                #print "ACTIONS DeBUG: " + str(actions)
-                #print "y_t DEBUG " + str(y_t)
                 loss += critic.model.train_on_batch([states,actions], y_t) 
                 a_for_grad = actor.model.predict(states)
                 grads = critic.gradients(states, a_for_grad)
