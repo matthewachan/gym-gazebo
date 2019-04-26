@@ -13,11 +13,15 @@ from sensor_msgs.msg import LaserScan
 
 from gym.utils import seeding
 
+from nav_msgs.msg import Odometry
+import std_msgs.msg 
+
 class GazeboCircuit2TurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
 
     def __init__(self):
         # Launch the simulation with the given launchfile name
-        gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -39,12 +43,26 @@ class GazeboCircuit2TurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    # Retrieve odometry data
+    def get_odom(self):
+        odom = None
+        while odom is None:
+            try:
+                odom = rospy.wait_for_message('/odom', Odometry, timeout=5)
+            except:
+                pass
+        return odom
+
+
     def step(self, action):
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
         except (rospy.ServiceException) as e:
             print ("/gazebo/unpause_physics service call failed")
+
+        odom = self.get_odom()
+
 
         max_ang_speed = 0.3
         ang_vel = (action-10)*max_ang_speed*0.1 #from (-0.33 to + 0.33)
@@ -95,6 +113,9 @@ class GazeboCircuit2TurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
             self.unpause()
         except (rospy.ServiceException) as e:
             print ("/gazebo/unpause_physics service call failed")
+
+        self.reset_odom()
+
         #read laser data
         data = None
         while data is None:
@@ -113,3 +134,11 @@ class GazeboCircuit2TurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
         state,done = self.calculate_observation(data)
 
         return np.asarray(state)
+
+    # Reset odometry (required when calling reset_gazebo)
+    def reset_odom(self):
+        reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', std_msgs.msg.Empty, queue_size=10)
+        timer = time.time()
+        # Takes some time to process Empty message and reset odometry
+        while time.time() - timer < 0.25:
+            reset_odom.publish(std_msgs.msg.Empty())

@@ -20,8 +20,8 @@ from std_srvs.srv import Empty
 class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def __init__(self):
-        gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -29,7 +29,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.reward_range = (-np.inf, np.inf)
         self.goal = Point(2, -3, 0)
-        self.prev_dist = None
+        self.prev_dist = np.sqrt(13)
         self.reached_goal = False
 
         self._seed()
@@ -44,7 +44,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         for i, item in enumerate(data.ranges):
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return list(data.ranges[0:20]),done
+        # print(data.ranges[0:20])
+        # print(list(data.ranges[0:20]))
+        return list(data.ranges),done
 
     #takes in: the position of the robot
     #theta = 0 => don't need to transform
@@ -61,7 +63,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.enable_physics()
 
-        # Compute distance between Turtlebot and goal
+        # # Compute distance between Turtlebot and goal
         odom = self.get_odom()
 
         # Compute goal position in the robot's frame
@@ -79,10 +81,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Change in distance from the goal
         delta_dist = dist - self.prev_dist
+        self.prev_dist = dist
+        #print(turtle_pos.x, turtle_pos.y, angle[2], delta_dist, stx, sty)
+        #from IPython import embed; embed()
 
         max_ang_speed = 0.3
         ang_vel = (action - 10) * max_ang_speed * 0.1 #from (-0.33 to + 0.33)
-        print(ang_vel)
+        #print(ang_vel)
 
         vel_cmd = Twist()
         vel_cmd.linear.x = 0.2
@@ -99,16 +104,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Compute reward
         if not done:
             # Straight reward = 5, Max angle reward = 0.5
-            reward = round(15*(max_ang_speed - abs(ang_vel) +0.0335), 2)
+            #reward = round(15*(max_ang_speed - abs(ang_vel) +0.0335), 2)
             # print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))
-            # reward = -delta_dist
+            reward = -delta_dist * 200
         else:
-            reward = -200
+            reward = -10
 
-        # Check goal state
-        # if dist < 0.5:
-        #     reward = 1000
-        #     done = True
+        #Check goal state
+        if dist < 0.5:
+            reward = 1000
+            done = True
 
         return np.asarray(state), reward, done, {}
 

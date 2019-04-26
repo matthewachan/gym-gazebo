@@ -131,13 +131,13 @@ if __name__ == '__main__':
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
-                # print("Exploit: ")
-                # print(a_t)
+                print("Exploit: ")
+                print(a_t)
             else:
                 a_type = "Explore"
                 a_t = np.random.uniform(-10,10, size=action_dim)
-                # print("Explore: ")
-                # print(a_t)
+                print("Explore: ")
+                print(a_t)
             #print(a_t)
             ob, r_t, done, info = env.step(a_t)
 
