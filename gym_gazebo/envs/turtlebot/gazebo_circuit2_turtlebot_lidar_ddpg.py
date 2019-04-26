@@ -27,7 +27,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
 
         self.reward_range = (-np.inf, np.inf)
-        self.goal = Point(-6, 0, 0)
+        self.goal = Point(2, -3, 0)
         self.prev_dist = None
         self.reached_goal = False
 
@@ -80,11 +80,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
 
         max_ang_speed = 0.3
-        # ang_vel = (action - 10) * max_ang_speed * 0.1 #from (-0.33 to + 0.33)
+        ang_vel = (action - 10) * max_ang_speed * 0.1 #from (-0.33 to + 0.33)
+        print(ang_vel)
 
         vel_cmd = Twist()
         vel_cmd.linear.x = 0.2
-        vel_cmd.angular.z = action / 3.0
+        vel_cmd.angular.z = ang_vel #action / 3.0
         self.vel_pub.publish(vel_cmd)
 
         data = self.lidar_scan()

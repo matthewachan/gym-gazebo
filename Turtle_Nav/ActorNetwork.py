@@ -40,16 +40,31 @@ class ActorNetwork(object):
             actor_target_weights[i] = self.TAU * actor_weights[i] + (1 - self.TAU)* actor_target_weights[i]
         self.target_model.set_weights(actor_target_weights)
 
+    # def create_actor_network(self, state_size,action_dim):
+    #     #print("Now we build the model")
+    #     model = Sequential()
+    #     S = Input(shape=[state_size])   
+    #     h0 = Dense(512, activation="relu", kernel_initializer="he_uniform")(S)
+    #     h1 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h0)
+    #     h2 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h1)
+    #     # LinearV = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
+    #     AngleV = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
+    #     # F = concatenate([LinearV, AngleV])
+    #     F = Lambda(lambda x: x * 20.0)(AngleV)
+    #     model = Model(input=S,output=F)
+    #     return model, model.trainable_weights, S
+
     def create_actor_network(self, state_size,action_dim):
         #print("Now we build the model")
         model = Sequential()
         S = Input(shape=[state_size])   
-        h0 = Dense(512, activation="relu", kernel_initializer="he_uniform")(S)
-        h1 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h0)
-        h2 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h1)
-        # LinearV = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
-        AngleV = Dense(1, activation='tanh', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
-        # F = concatenate([LinearV, AngleV])
-        model = Model(input=S,output=AngleV)
+        h0 = Dense(100, activation="relu", kernel_initializer="he_uniform")(S)
+        h1 = Dense(100, activation="relu", kernel_initializer="he_uniform")(h0)
+        # #uniform = lambda shape, name: uniform(shape, scale=3e-3, name=name)
+        # def my_init(shape, name=None):
+        #     return uniform(shape, range = (0,0.01), name=name)
+        V = Dense(action_dim, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
+        F = Lambda(lambda x: x * 20.0)(V)
+        model = Model(input=S,output=F)
         return model, model.trainable_weights, S
 

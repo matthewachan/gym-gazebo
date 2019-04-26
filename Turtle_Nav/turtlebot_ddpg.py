@@ -50,7 +50,7 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 1
+    continue_execution = 0
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     EXPLORE = 200.0*50
     episode_count = 1000 if (train_indicator) else 1
     # episode_count = 1000
-    max_steps = 1000 
+    max_steps = 100
     reward = 0
     done = False
     step = 0
@@ -110,6 +110,17 @@ if __name__ == '__main__':
 
     #potentially, we can use multi-threading here
 
+    # for i in range(10):
+    #     ob = env.reset()
+
+    #     while not done:
+    #         s_t = np.array(ob)
+    #         a_t = np.random.uniform(0,20, size=action_dim)
+    #         ob, r_t, done, info = env.step(a_t)
+    #         s_t1 = np.array(ob)
+    #         buff.add(s_t, a_t[0], r_t, s_t1, done)  
+
+
     #The training loop
     for i in range(episode_count):
 
@@ -134,13 +145,13 @@ if __name__ == '__main__':
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
-                # print("Exploit: ")
-                # print(a_t)
+                print("Exploit: ")
+                print(a_t)
             else:
                 a_type = "Explore"
-                a_t = np.random.uniform(-10,10, size=action_dim)
-                # print("Explore: ")
-                # print(a_t)
+                a_t = np.random.uniform(0,20, size=action_dim)
+                print("Explore: ")
+                print(a_t)
             # print("action: ")
             # print(a_t)
             ob, r_t, done, info = env.step(a_t)

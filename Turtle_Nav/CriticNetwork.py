@@ -42,15 +42,28 @@ class CriticNetwork(object):
             critic_target_weights[i] = self.TAU * critic_weights[i] + (1 - self.TAU)* critic_target_weights[i]
         self.target_model.set_weights(critic_target_weights)
 
+    # def create_critic_network(self, state_size,action_dim):
+    #     print("Now we build the model")
+    #     S = Input(shape=[state_size])  
+    #     A = Input(shape=[action_dim],name='action2')   
+    #     w = Dense(512, name="layer1", kernel_initializer='he_uniform',activation='relu')(S)
+    #     h = concatenate([w,A])    
+    #     h3 = Dense(512, name="layer2", kernel_initializer='he_uniform',activation='relu')(h)
+    #     h4 = Dense(512, name="layer3", kernel_initializer='he_uniform',activation='relu')(h3)
+    #     V = Dense(1,name="layer4",kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None),activation='linear')(h4) 
+    #     model = Model(input=[S,A],output=V)
+    #     adam = Adam(lr=self.LEARNING_RATE)
+    #     model.compile(loss='mse', optimizer=adam)
+    #     return model, A, S 
+
     def create_critic_network(self, state_size,action_dim):
         print("Now we build the model")
         S = Input(shape=[state_size])  
         A = Input(shape=[action_dim],name='action2')   
-        w = Dense(512, name="layer1", kernel_initializer='he_uniform',activation='relu')(S)
+        w = Dense(HIDDEN1_UNITS, kernel_initializer='he_uniform',activation='relu')(S)
         h = concatenate([w,A])    
-        h3 = Dense(512, name="layer2", kernel_initializer='he_uniform',activation='relu')(h)
-        h4 = Dense(512, name="layer3", kernel_initializer='he_uniform',activation='relu')(h3)
-        V = Dense(1,name="layer4",kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None),activation='linear')(h4) 
+        h3 = Dense(HIDDEN2_UNITS, kernel_initializer='he_uniform',activation='relu')(h)
+        V = Dense(action_dim,kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None),activation='linear')(h3)   
         model = Model(input=[S,A],output=V)
         adam = Adam(lr=self.LEARNING_RATE)
         model.compile(loss='mse', optimizer=adam)
