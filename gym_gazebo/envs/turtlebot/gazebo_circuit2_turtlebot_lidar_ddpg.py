@@ -20,8 +20,8 @@ from std_srvs.srv import Empty
 class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def __init__(self):
-        gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -44,7 +44,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         for i, item in enumerate(data.ranges):
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return list(data.ranges[0:20]),done
+        # return list(data.ranges[0:20]),done
+        return data.ranges, done
 
     #takes in: the position of the robot
     #theta = 0 => don't need to transform
@@ -94,7 +95,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
-        state+=[stx, sty]
+        # state+=[stx, sty]
 
         # Compute reward
         if not done:
@@ -134,9 +135,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
-        #print(state)
-        state+=[stx, sty]
-        #print(state)
+        # state+=[stx, sty]
 
         return np.asarray(state)
 
