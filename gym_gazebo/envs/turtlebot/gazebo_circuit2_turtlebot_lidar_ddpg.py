@@ -20,7 +20,8 @@ from std_srvs.srv import Empty
 class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def __init__(self):
-        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
@@ -57,26 +58,26 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     # Step the simulation forward in time
     def step(self, action):
+
         self.enable_physics()
 
         # Compute distance between Turtlebot and goal
         odom = self.get_odom()
+
+        # Compute goal position in the robot's frame
         turtle_pos = odom.pose.pose.position
-        quaternion =odom.pose.pose.orientation
+        quaternion = odom.pose.pose.orientation
         explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
         angle = tf.transformations.euler_from_quaternion(explicit_quat)
         
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
-        # print("angle is: ")
-        # print(angle)
-        # print(stx,sty)
-        # print(stx, sty, turtle_pos.x, turtle_pos.y, self.goal)
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
             
         # Edge case for initializing previous distance to the goal
         if (self.prev_dist == None):
             self.prev_dist = dist
 
+        # Change in distance from the goal
         delta_dist = dist - self.prev_dist
 
         max_ang_speed = 0.3
@@ -85,7 +86,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         vel_cmd = Twist()
         vel_cmd.linear.x = 0.2
-        vel_cmd.angular.z = ang_vel #action / 3.0
+        vel_cmd.angular.z = ang_vel # action / 3.0
         self.vel_pub.publish(vel_cmd)
 
         data = self.lidar_scan()
@@ -93,19 +94,21 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
-        #print(state)
         state+=[stx, sty]
-        #print(state)
 
+        # Compute reward
         if not done:
-            reward = -delta_dist
+            # Straight reward = 5, Max angle reward = 0.5
+            reward = round(15*(max_ang_speed - abs(ang_vel) +0.0335), 2)
+            # print ("Action : "+str(action)+" Ang_vel : "+str(ang_vel)+" reward="+str(reward))
+            # reward = -delta_dist
         else:
             reward = -200
 
         # Check goal state
-        if dist < 0.5:
-            reward = 1000
-            done = True
+        # if dist < 0.5:
+        #     reward = 1000
+        #     done = True
 
         return np.asarray(state), reward, done, {}
 
