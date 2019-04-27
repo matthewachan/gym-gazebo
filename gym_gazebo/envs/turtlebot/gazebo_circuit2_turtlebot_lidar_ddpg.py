@@ -14,6 +14,7 @@ from geometry_msgs.msg import Twist, Point
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import std_msgs.msg # Required for odom Empty message
+from gazebo_msgs.srv import GetModelState
 
 from std_srvs.srv import Empty
 
@@ -22,7 +23,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -30,9 +32,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
+        self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
         self.reward_range = (-np.inf, np.inf)
-        self.goal = Point(2, -3, 0)
+
+        # Get Gazebo model info about the target (relative to green circle link)
+        self.goal = None
+
         self.prev_dist = np.sqrt(13)
         self.reached_goal = False
 
@@ -129,6 +135,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.enable_physics()
 
+        # Get the Target model's position relative to the ground plane
+        self.goal = self.get_model_state('Target', 'ground_plane').pose.position
+
         # Reset Turtlebot's odometry
         self.reset_odom()
 
@@ -154,7 +163,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 ###################
 
     # Disable Gazebo physics
-    def pause_physics(self):
+    def pause_physics(self): 
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             #resp_pause = pause.call()
