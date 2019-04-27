@@ -50,7 +50,7 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 1
+    continue_execution = 0
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
-    action_dim = 1  #angular vel + linear vel
+    action_dim = 2  #angular vel + linear vel
     state_dim = 22  #num of features in state
 
     EXPLORE = 200.0*50
@@ -145,11 +145,15 @@ if __name__ == '__main__':
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
+                a_t = a_t[0]
                 print("Exploit: ")
                 print(a_t)
             else:
                 a_type = "Explore"
+                # lin_vel = np.random.uniform(0,20, size=1)
+                # ang_vel = np.random.uniform(0,20, size=1)
                 a_t = np.random.uniform(0,20, size=action_dim)
+                # a_t = np.asarray([lin_vel, ang_vel])
                 print("Explore: ")
                 print(a_t)
             # print("action: ")
@@ -158,7 +162,7 @@ if __name__ == '__main__':
 
             s_t1 = np.array(ob)
         
-            buff.add(s_t, a_t[0], r_t, s_t1, done)      #Add replay buffer
+            buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
             
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
@@ -167,7 +171,7 @@ if __name__ == '__main__':
             rewards = np.asarray([e[2] for e in batch])
             new_states = np.asarray([e[3] for e in batch])
             dones = np.asarray([e[4] for e in batch])
-            y_t = np.asarray([e[1] for e in batch])
+            y_t = np.asarray([e[2] for e in batch])
 
             #print(actor.target_model.predict(new_states))
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])  

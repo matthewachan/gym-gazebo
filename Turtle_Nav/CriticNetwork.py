@@ -63,7 +63,7 @@ class CriticNetwork(object):
         w = Dense(HIDDEN1_UNITS, kernel_initializer='he_uniform',activation='relu')(S)
         h = concatenate([w,A])    
         h3 = Dense(HIDDEN2_UNITS, kernel_initializer='he_uniform',activation='relu')(h)
-        V = Dense(action_dim,kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None),activation='linear')(h3)   
+        V = Dense(1,kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None),activation='linear')(h3)   
         model = Model(input=[S,A],output=V)
         adam = Adam(lr=self.LEARNING_RATE)
         model.compile(loss='mse', optimizer=adam)

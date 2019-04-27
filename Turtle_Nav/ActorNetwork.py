@@ -63,8 +63,14 @@ class ActorNetwork(object):
         # #uniform = lambda shape, name: uniform(shape, scale=3e-3, name=name)
         # def my_init(shape, name=None):
         #     return uniform(shape, range = (0,0.01), name=name)
-        V = Dense(action_dim, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
-        F = Lambda(lambda x: x * 20.0)(V)
-        model = Model(input=S,output=F)
-        return model, model.trainable_weights, S
+        LinVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
+        AngVel = Dense(1, activation='tanh', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
 
+        F1 = Lambda(lambda x: x * 20.0)(LinVel)
+        F2 = Lambda(lambda x: x * 20.0)(AngVel)
+
+        F = concatenate([F1, F2])
+
+        model = Model(input=S,output=F)
+
+        return model, model.trainable_weights, S
