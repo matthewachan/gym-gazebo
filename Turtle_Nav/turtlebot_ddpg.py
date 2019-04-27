@@ -62,7 +62,7 @@ if __name__ == '__main__':
     LRC = 0.001     #Lerning rate for Critic
 
     action_dim = 1  #angular vel + linear vel
-    state_dim = 20  #num of features in state
+    state_dim = 22  #num of features in state
 
     EXPLORE = 200.0*50
     episode_count = 1000 if (train_indicator) else 1
