@@ -67,7 +67,7 @@ if __name__ == '__main__':
     EXPLORE = 200.0*50
     episode_count = 1000 if (train_indicator) else 1
     # episode_count = 1000
-    max_steps = 100
+    max_steps = 500
     reward = 0
     done = False
     step = 0
