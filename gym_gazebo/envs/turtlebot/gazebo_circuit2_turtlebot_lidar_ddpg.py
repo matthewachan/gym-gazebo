@@ -28,9 +28,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
 
         self.reward_range = (-np.inf, np.inf)
-        # self.goal = Point(2, -3, 0)
-        # self.prev_dist = None
-        # self.reached_goal = False
+        self.goal = Point(2, -3, 0)
+        self.prev_dist = None
+        self.reached_goal = False
 
         self._seed()
 
@@ -63,20 +63,20 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.enable_physics()
 
         # Compute distance between Turtlebot and goal
-        # odom = self.get_odom()
+        odom = self.get_odom()
 
         # Compute goal position in the robot's frame
-        # turtle_pos = odom.pose.pose.position
-        # quaternion = odom.pose.pose.orientation
-        # explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
-        # angle = tf.transformations.euler_from_quaternion(explicit_quat)
+        turtle_pos = odom.pose.pose.position
+        quaternion = odom.pose.pose.orientation
+        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
+        angle = tf.transformations.euler_from_quaternion(explicit_quat)
         
-        # stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
-        # dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
+        stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
+        dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
             
         # Edge case for initializing previous distance to the goal
-        # if (self.prev_dist == None):
-        #     self.prev_dist = dist
+        if (self.prev_dist == None):
+            self.prev_dist = dist
 
         # Change in distance from the goal
         delta_dist = dist - self.prev_dist
@@ -119,16 +119,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.enable_physics()
 
-        # self.reset_odom()
+        self.reset_odom()
 
-        # odom = self.get_odom()
-        # turtle_pos = odom.pose.pose.position
-        # quaternion =odom.pose.pose.orientation
-        # explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
-        # angle = tf.transformations.euler_from_quaternion(explicit_quat)
+        odom = self.get_odom()
+        turtle_pos = odom.pose.pose.position
+        quaternion =odom.pose.pose.orientation
+        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
+        angle = tf.transformations.euler_from_quaternion(explicit_quat)
         # print("angle is: ")
         # print(angle)
-        # stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
+        stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
 
         data = self.lidar_scan()
 
