@@ -76,10 +76,10 @@
       <real_time_update_rate>0</real_time_update_rate>
     </physics>
     <state world_name='default'>
-      <sim_time>36969 0</sim_time>
-      <real_time>29 217488524</real_time>
-      <wall_time>1556326881 355068604</wall_time>
-      <iterations>3338481</iterations>
+      <sim_time>3584 190000000</sim_time>
+      <real_time>5 76237922</real_time>
+      <wall_time>1556166584 295344388</wall_time>
+      <iterations>358419</iterations>
       <model name='DEBUG'>
         <pose frame=''>2.4 -2.1 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -108,28 +108,6 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='Target'>
-        <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='green'>
-          <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='red'>
-          <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-        <link name='yellow'>
-          <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -146,7 +124,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>2.32701 -1.96671 13.65 -1e-06 1.56 3.14</pose>
+        <pose frame=''>-0.128254 -7.78835 13.6764 -1e-06 1.56 3.14</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -497,79 +475,6 @@
       <static>1</static>
       <allow_auto_disable>1</allow_auto_disable>
       <pose frame=''>2.4 -2.1 0 0 -0 0</pose>
-    </model>
-    <model name='Target'>
-      <static>1</static>
-      <link name='green'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>0.5</radius>
-              <length>0.05</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Green</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <link name='yellow'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>1</radius>
-              <length>0.04</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Yellow</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <link name='red'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>1.5</radius>
-              <length>0.03</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Red</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>
