@@ -42,6 +42,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         #self.prev_dist = np.sqrt()
         self.reached_goal = False
 
+        self.prev_pose = None
         self._seed()
 
     def _seed(self, seed=None):
@@ -65,6 +66,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         real_y = delta_y * cos(t) - delta_x * sin(t)
         return real_x,real_y
 
+    def get_dist_check(self, turtle_pos):
+        move_dist = (self.prev_pose.x - turtle_pos.x)*(self.prev_pose.x - turtle_pos.x) + (self.prev_pose.y - turtle_pos.y)*(self.prev_pose.y - turtle_pos.y)
+        move_dist = math.sqrt(move_dist)
+        if(move_dist > 0.7):
+            return 0
+        else:
+            return -10 + 10*move_dist
 
     # Step the simulation forward in time
     def step(self, action):
@@ -103,7 +111,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         ang_vel = ang_action
         # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
 
-        # print (lin_vel, ang_vel)
+        self.prev_pose = turtle_pos
 
         vel_cmd = Twist()
         vel_cmd.linear.x = lin_vel
@@ -121,7 +129,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         if not done:
             reward = -delta_dist * 200
         else:
-            reward = -10
+            reward = -50
 
         # Check goal state
         if dist < 0.5:
@@ -153,7 +161,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         angle = tf.transformations.euler_from_quaternion(explicit_quat)
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
         self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
-        
+        self.prev_pose = turtle_pos
         data = self.lidar_scan()
 
         self.pause_physics()
