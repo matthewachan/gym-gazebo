@@ -23,8 +23,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -74,7 +74,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         if(move_dist > 0.7):
             return 0
         else:
-            return -10 + 10*move_dist
+            return -1 + move_dist
 
     # Step the simulation forward in time
     def step(self, action):
@@ -82,6 +82,30 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.enable_physics()
 
 
+        ######################### get the speed  #################################
+
+        # Get linear and angular action
+        lin_action = action[0]
+        ang_action = action[1]
+        
+        # Generated linear velocity action MUST be between 0 and 20
+        max_lin_speed = 0.5
+        # lin_vel = (lin_action / 20) * max_lin_speed
+        lin_vel = lin_action * max_lin_speed
+
+        # Generated angular velocity action MUST be between 0 and 20
+        max_ang_speed = 1
+        ang_vel = ang_action
+        # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+
+        vel_cmd = Twist()
+        vel_cmd.linear.x = lin_vel
+        vel_cmd.angular.z = ang_vel # action / 3.0
+        self.vel_pub.publish(vel_cmd)
+
+        data = self.lidar_scan()
+
+        ############################ now get the corresponding rewards #############################
         # Compute distance between Turtlebot and goal
         odom = self.get_odom()
 
@@ -99,30 +123,11 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
-        # Get linear and angular action
-        lin_action = action[0]
-        ang_action = action[1]
-        
-        # Generated linear velocity action MUST be between 0 and 20
-        max_lin_speed = 0.5
-        # lin_vel = (lin_action / 20) * max_lin_speed
-        lin_vel = lin_action * max_lin_speed
-
-        # Generated angular velocity action MUST be between 0 and 20
-        max_ang_speed = 1
-        ang_vel = ang_action
-        # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
-
         dist_reward = self.get_dist_check(turtle_pos)
 
         self.prev_pose = turtle_pos
 
-        vel_cmd = Twist()
-        vel_cmd.linear.x = lin_vel
-        vel_cmd.angular.z = ang_vel # action / 3.0
-        self.vel_pub.publish(vel_cmd)
-
-        data = self.lidar_scan()
+        ############################ end of distance related rewards ##############################
 
         self.pause_physics()
 
@@ -131,15 +136,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Set reward
         if not done:
-            reward = -delta_dist * 200
+            reward = -delta_dist * 20
         else:
-            reward = -50
+            reward = -5
 
         reward += dist_reward
 
         # Check goal state
         if dist < 0.5:
-            reward = 1000
+            reward = 100
             done = True
 
         return np.asarray(state), reward, done, {}
