@@ -65,12 +65,12 @@ class ActorNetwork(object):
         # def my_init(shape, name=None):
         #     return uniform(shape, range = (0,0.01), name=name)
         LinVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
-        AngVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
+        AngVel = Dense(1, activation='tanh', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
 
-        F1 = Lambda(lambda x: x * 20.0)(LinVel)
-        F2 = Lambda(lambda x: x * 20.0)(AngVel)
+        # F1 = Lambda(lambda x: x * 20.0)(LinVel)
+        # F2 = Lambda(lambda x: x * 20.0)(AngVel)
 
-        F = concatenate([F1, F2])
+        F = concatenate([LinVel, AngVel])
 
         model = Model(input=S,output=F)
 

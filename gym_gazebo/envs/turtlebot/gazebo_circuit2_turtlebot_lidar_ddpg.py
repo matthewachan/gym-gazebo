@@ -23,8 +23,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -97,13 +97,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         
         # Generated linear velocity action MUST be between 0 and 20
         max_lin_speed = 0.5
-        lin_vel = (lin_action / 20) * max_lin_speed
+        # lin_vel = (lin_action / 20) * max_lin_speed
+        lin_vel = lin_action * max_lin_speed
 
         # Generated angular velocity action MUST be between 0 and 20
         max_ang_speed = 1
-        ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+        ang_vel = ang_action
+        # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
 
-        print (lin_vel, ang_vel)
+        # print (lin_vel, ang_vel)
 
         vel_cmd = Twist()
         vel_cmd.linear.x = lin_vel
@@ -137,8 +139,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.enable_physics()
 
+        # Stop the robot
+        self.vel_pub.publish(Twist())
+
         # Get the Target model's position relative to the ground plane
         self.goal = self.get_model_state('Target', 'ground_plane').pose.position
+        print self.goal
 
         # Reset Turtlebot's odometry
         self.reset_odom()

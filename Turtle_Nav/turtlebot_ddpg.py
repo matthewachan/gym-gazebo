@@ -64,14 +64,14 @@ if __name__ == '__main__':
     action_dim = 2  #angular vel + linear vel
     state_dim = 22  #num of features in state
 
-    EXPLORE = 200.0*100
-    episode_count = 20000 if (train_indicator) else 1
+    EXPLORE = 200.0*50
+    episode_count = 1000 if (train_indicator) else 1
     # episode_count = 1000
     max_steps = 500
     reward = 0
     done = False
     step = 0
-    epsilon = 0.5 if (train_indicator) else 0.0
+    epsilon = 0.3 if (train_indicator) else 0.0
     indicator = 0
 
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     #The training loop
     for i in range(episode_count):
 
-        print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
+        # print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
 
         ob = env.reset()
         if not train_indicator:
@@ -150,9 +150,11 @@ if __name__ == '__main__':
                 # print(a_t)
             else:
                 a_type = "Explore"
-                # lin_vel = np.random.uniform(0,20, size=1)
-                # ang_vel = np.random.uniform(0,20, size=1)
-                a_t = np.random.uniform(0,20, size=action_dim)
+                lin_vel = np.random.uniform(0, 1, size=1)
+                ang_vel = np.random.uniform(-1, 1, size=1)
+                a_t = [lin_vel, ang_vel]
+                print a_t
+                # a_t = np.random.uniform(0,20, size=action_dim)
                 # a_t = np.asarray([lin_vel, ang_vel])
                 # print("Explore: ")
                 # print(a_t)
@@ -193,7 +195,7 @@ if __name__ == '__main__':
             total_reward += r_t
             s_t = s_t1
         
-            print("Episode", i, "Step", step, "Action", a_type, "Reward", r_t, "Loss", loss, "Epsilon", epsilon)
+            # print("Episode", i, "Step", step, "Action", a_type, "Reward", r_t, "Loss", loss, "Epsilon", epsilon)
         
             step += 1
             if done:
