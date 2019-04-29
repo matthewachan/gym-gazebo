@@ -42,7 +42,7 @@ def clear_monitor_files(training_dir):
 
 if __name__ == '__main__':
 
-    train_indicator=1
+    train_indicator = 1
 
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     #replace the action with the correct one
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 0
+    continue_execution = 1
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     state_dim = 22  #num of features in state
 
     EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 1
+    episode_count = 1000 if (train_indicator) else 10
     # episode_count = 1000
     max_steps = 500
     reward = 0
@@ -127,9 +127,6 @@ if __name__ == '__main__':
         # print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
 
         ob = env.reset()
-        if not train_indicator:
-            print "start recording now"
-            time.sleep(5)
         s_t = np.array(ob)
      
         total_reward = 0.
@@ -148,6 +145,10 @@ if __name__ == '__main__':
                 a_t = a_t[0]
                 # print("Exploit: ")
                 print(a_t)
+                if(np.any(np.isnan(a_t))):
+                    print("encountered a nan value by nueral network")
+                    print(s_t)
+                    exit()
             else:
                 a_type = "Explore"
                 lin_vel = np.random.uniform(0, 1, size=1)[0]
