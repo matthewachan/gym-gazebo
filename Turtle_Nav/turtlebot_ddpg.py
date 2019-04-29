@@ -64,14 +64,14 @@ if __name__ == '__main__':
     action_dim = 2  #angular vel + linear vel
     state_dim = 22  #num of features in state
 
-    EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 1
+    EXPLORE = 200.0*100
+    episode_count = 20000 if (train_indicator) else 1
     # episode_count = 1000
     max_steps = 500
     reward = 0
     done = False
     step = 0
-    epsilon = 0.3 if (train_indicator) else 0.0
+    epsilon = 0.5 if (train_indicator) else 0.0
     indicator = 0
 
 
@@ -146,16 +146,16 @@ if __name__ == '__main__':
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
                 a_t = a_t[0]
-                print("Exploit: ")
-                print(a_t)
+                # print("Exploit: ")
+                # print(a_t)
             else:
                 a_type = "Explore"
                 # lin_vel = np.random.uniform(0,20, size=1)
                 # ang_vel = np.random.uniform(0,20, size=1)
                 a_t = np.random.uniform(0,20, size=action_dim)
                 # a_t = np.asarray([lin_vel, ang_vel])
-                print("Explore: ")
-                print(a_t)
+                # print("Explore: ")
+                # print(a_t)
             # print("action: ")
             # print(a_t)
             ob, r_t, done, info = env.step(a_t)

@@ -96,12 +96,14 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         ang_action = action[1]
         
         # Generated linear velocity action MUST be between 0 and 20
-        max_lin_speed = 0.2
-        lin_vel = lin_action / 100 # between (0 and +0.2)
+        max_lin_speed = 0.5
+        lin_vel = (lin_action / 20) * max_lin_speed
 
         # Generated angular velocity action MUST be between 0 and 20
-        max_ang_speed = 0.3
+        max_ang_speed = 1
         ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+
+        print (lin_vel, ang_vel)
 
         vel_cmd = Twist()
         vel_cmd.linear.x = lin_vel
