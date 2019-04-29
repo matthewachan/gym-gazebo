@@ -24,7 +24,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -39,7 +39,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Get Gazebo model info about the target (relative to green circle link)
         self.goal = None
 
-        self.prev_dist = np.sqrt(13)
+        #self.prev_dist = np.sqrt()
         self.reached_goal = False
 
         self._seed()
@@ -71,9 +71,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.enable_physics()
 
-        # Edge case for initializing previous distance to the goal
-        if (self.prev_dist == None):
-            self.prev_dist = dist
 
         # Compute distance between Turtlebot and goal
         odom = self.get_odom()
@@ -86,6 +83,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
+        print turtle_pos
 
         # Change in distance from the goal
         delta_dist = dist - self.prev_dist
@@ -144,8 +142,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Get the Target model's position relative to the ground plane
         self.goal = self.get_model_state('Target', 'ground_plane').pose.position
-        print self.goal
-
         # Reset Turtlebot's odometry
         self.reset_odom()
 
@@ -156,7 +152,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
         angle = tf.transformations.euler_from_quaternion(explicit_quat)
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
-
+        self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
+        
         data = self.lidar_scan()
 
         self.pause_physics()

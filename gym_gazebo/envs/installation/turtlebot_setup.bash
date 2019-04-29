@@ -42,14 +42,14 @@ else
   bash -c 'sed "s,GYM_GAZEBO_WORLD_DEBUG=[^;]*,'GYM_GAZEBO_WORLD_DEBUG=`pwd`/../assets/worlds/debug.world'," -i ~/.bashrc'
 fi
 if [ -z "$GYM_GAZEBO_WORLD_ENV1" ]; then
-  bash -c 'echo "export GYM_GAZEBO_WORLD_DEBUG="`pwd`/../assets/worlds/env1.world >> ~/.bashrc'
+  bash -c 'echo "export GYM_GAZEBO_WORLD_ENV1="`pwd`/../assets/worlds/env1.world >> ~/.bashrc'
 else
-  bash -c 'sed "s,GYM_GAZEBO_WORLD_DEBUG=[^;]*,'GYM_GAZEBO_WORLD_DEBUG=`pwd`/../assets/worlds/env1.world'," -i ~/.bashrc'
+  bash -c 'sed "s,GYM_GAZEBO_WORLD_ENV1=[^;]*,'GYM_GAZEBO_WORLD_DEBUG=`pwd`/../assets/worlds/env1.world'," -i ~/.bashrc'
 fi
 if [ -z "$GYM_GAZEBO_WORLD_ENV2" ]; then
-  bash -c 'echo "export GYM_GAZEBO_WORLD_DEBUG="`pwd`/../assets/worlds/env2.world >> ~/.bashrc'
+  bash -c 'echo "export GYM_GAZEBO_WORLD_ENV2="`pwd`/../assets/worlds/env2.world >> ~/.bashrc'
 else
-  bash -c 'sed "s,GYM_GAZEBO_WORLD_DEBUG=[^;]*,'GYM_GAZEBO_WORLD_DEBUG=`pwd`/../assets/worlds/env2.world'," -i ~/.bashrc'
+  bash -c 'sed "s,GYM_GAZEBO_WORLD_ENV2=[^;]*,'GYM_GAZEBO_WORLD_DEBUG=`pwd`/../assets/worlds/env2.world'," -i ~/.bashrc'
 fi
 
 #copy altered urdf model
