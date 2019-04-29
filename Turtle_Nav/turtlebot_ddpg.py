@@ -147,11 +147,11 @@ if __name__ == '__main__':
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
                 a_t = a_t[0]
                 # print("Exploit: ")
-                # print(a_t)
+                print(a_t)
             else:
                 a_type = "Explore"
-                lin_vel = np.random.uniform(0, 1, size=1)
-                ang_vel = np.random.uniform(-1, 1, size=1)
+                lin_vel = np.random.uniform(0, 1, size=1)[0]
+                ang_vel = np.random.uniform(-1, 1, size=1)[0]
                 a_t = [lin_vel, ang_vel]
                 print a_t
                 # a_t = np.random.uniform(0,20, size=action_dim)
@@ -166,6 +166,9 @@ if __name__ == '__main__':
         
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
             
+            print "rewards: "
+            print r_t
+
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
             states = np.asarray([e[0] for e in batch])

@@ -68,7 +68,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def get_dist_check(self, turtle_pos):
         move_dist = (self.prev_pose.x - turtle_pos.x)*(self.prev_pose.x - turtle_pos.x) + (self.prev_pose.y - turtle_pos.y)*(self.prev_pose.y - turtle_pos.y)
-        move_dist = math.sqrt(move_dist)
+        move_dist = np.sqrt(move_dist)
+        print("move_dist")
+        print(move_dist)
         if(move_dist > 0.7):
             return 0
         else:
@@ -91,7 +93,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
-        print turtle_pos
+        #print turtle_pos
 
         # Change in distance from the goal
         delta_dist = dist - self.prev_dist
@@ -110,6 +112,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         max_ang_speed = 1
         ang_vel = ang_action
         # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+
+        dist_reward = self.get_dist_check(turtle_pos)
 
         self.prev_pose = turtle_pos
 
@@ -130,6 +134,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             reward = -delta_dist * 200
         else:
             reward = -50
+
+        reward += dist_reward
 
         # Check goal state
         if dist < 0.5:
