@@ -85,6 +85,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         angle = tf.transformations.euler_from_quaternion(explicit_quat)
         
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
+        print (stx, sty)
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
 
         # Change in distance from the goal
@@ -96,12 +97,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         ang_action = action[1]
         
         # Generated linear velocity action MUST be between 0 and 20
-        max_lin_speed = 0.2
-        lin_vel = lin_action / 100 # between (0 and +0.2)
+        max_lin_speed = 0.5
+        lin_vel = (lin_action / 20) * max_lin_speed
+        if (lin_vel > 0.5 or lin_vel < 0):
+            print "ERROR lin_vel"
 
         # Generated angular velocity action MUST be between 0 and 20
-        max_ang_speed = 0.3
+        max_ang_speed = 1
         ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+        if (ang_vel > 1 or ang_vel < -1):
+            print "ERROR ang_vel"
 
         vel_cmd = Twist()
         vel_cmd.linear.x = lin_vel
@@ -117,9 +122,10 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Set reward
         if not done:
+            print delta_dist
             reward = -delta_dist * 200
         else:
-            reward = -10
+            reward = -100
 
         # Check goal state
         if dist < 0.5:

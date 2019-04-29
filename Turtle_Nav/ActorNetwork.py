@@ -58,13 +58,14 @@ class ActorNetwork(object):
         #print("Now we build the model")
         model = Sequential()
         S = Input(shape=[state_size])   
-        h0 = Dense(100, activation="relu", kernel_initializer="he_uniform")(S)
-        h1 = Dense(100, activation="relu", kernel_initializer="he_uniform")(h0)
+        h0 = Dense(512, activation="relu", kernel_initializer="he_uniform")(S)
+        h1 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h0)
+        h2 = Dense(512, activation="relu", kernel_initializer="he_uniform")(h1)
         # #uniform = lambda shape, name: uniform(shape, scale=3e-3, name=name)
         # def my_init(shape, name=None):
         #     return uniform(shape, range = (0,0.01), name=name)
-        LinVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
-        AngVel = Dense(1, activation='tanh', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h1)
+        LinVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
+        AngVel = Dense(1, activation='sigmoid', kernel_initializer=uniform(minval=-3e-3,maxval=3e-3,seed=None))(h2)
 
         F1 = Lambda(lambda x: x * 20.0)(LinVel)
         F2 = Lambda(lambda x: x * 20.0)(AngVel)
