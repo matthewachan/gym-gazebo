@@ -150,8 +150,8 @@ if __name__ == '__main__':
                 # print(a_t)
             else:
                 a_type = "Explore"
-                lin_vel = np.random.uniform(0, 1, size=1)
-                ang_vel = np.random.uniform(-1, 1, size=1)
+                lin_vel = np.random.uniform(0, 1, size=1)[0]
+                ang_vel = np.random.uniform(-1, 1, size=1)[0]
                 a_t = [lin_vel, ang_vel]
                 print a_t
                 # a_t = np.random.uniform(0,20, size=action_dim)
