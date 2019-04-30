@@ -51,7 +51,7 @@ if __name__ == '__main__':
     plotter = liveplot.LivePlot(outdir)
 
     continue_execution = 1
-    train_indicator = 0
+    train_indicator = 1
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
