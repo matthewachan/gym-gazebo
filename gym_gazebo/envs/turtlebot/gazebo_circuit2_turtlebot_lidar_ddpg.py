@@ -55,13 +55,14 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         min_range = 0.2
         MAX_DIST = 9999 # Distance reading to use instead of NaN
         done = False
+        lidar_data = np.asarray(data.ranges)
         for i, item in enumerate(data.ranges):
             # Swap NaN values for MAX_DIST
             if (np.isinf(data.ranges[i])):
-                data.ranges[i] = MAX_DIST
+                lidar_data[i] = MAX_DIST
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return list(data.ranges),done
+        return list(lidar_data),done
 
     # Input: the position of the robot
     # theta = 0 => don't need to transform
