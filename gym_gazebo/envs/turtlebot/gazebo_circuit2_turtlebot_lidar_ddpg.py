@@ -56,7 +56,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         done = False
         for i, item in enumerate(data.ranges):
             # Swap NaN values for MAX_DIST
-            if (np.isnan(data.ranges[i]):
+            if (np.isinf(data.ranges[i])):
                 data.ranges[i] = MAX_DIST
             if (min_range > data.ranges[i] > 0):
                 done = True
