@@ -52,8 +52,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def check_collision(self,data):
         min_range = 0.2
+        MAX_DIST = 9999 # Distance reading to use instead of NaN
         done = False
         for i, item in enumerate(data.ranges):
+            # Swap NaN values for MAX_DIST
+            if (np.isnan(data.ranges[i]):
+                data.ranges[i] = MAX_DIST
             if (min_range > data.ranges[i] > 0):
                 done = True
         return list(data.ranges),done
