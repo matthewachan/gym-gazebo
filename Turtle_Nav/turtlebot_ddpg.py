@@ -42,7 +42,7 @@ def clear_monitor_files(training_dir):
 
 if __name__ == '__main__':
 
-    train_indicator = 1
+    
 
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     #replace the action with the correct one
@@ -51,13 +51,14 @@ if __name__ == '__main__':
     plotter = liveplot.LivePlot(outdir)
 
     continue_execution = 1
+    train_indicator = 0
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
     BUFFER_SIZE = 200000
     BATCH_SIZE = 32
     GAMMA = 0.99
-    TAU = 0.001     #Target Network HyperParameters
+    TAU = 0.05     #Target Network HyperParameters
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
@@ -139,6 +140,8 @@ if __name__ == '__main__':
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
             
+            print(s_t)
+
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
@@ -147,8 +150,10 @@ if __name__ == '__main__':
                 print(a_t)
                 if(np.any(np.isnan(a_t))):
                     print("encountered a nan value by nueral network")
-                    print(s_t)
-                    exit()
+                    exit(0)
+                    lin_vel = np.random.uniform(0, 1, size=1)[0]
+                    ang_vel = np.random.uniform(-1, 1, size=1)[0]
+                    a_t = [lin_vel, ang_vel]
             else:
                 a_type = "Explore"
                 lin_vel = np.random.uniform(0, 1, size=1)[0]
@@ -181,7 +186,7 @@ if __name__ == '__main__':
 
             #print(actor.target_model.predict(new_states))
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])  
-           
+
             for k in range(len(batch)):
                 if dones[k]:
                     y_t[k] = rewards[k]

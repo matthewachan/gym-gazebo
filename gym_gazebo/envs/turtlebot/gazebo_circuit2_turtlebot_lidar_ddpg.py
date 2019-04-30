@@ -25,7 +25,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv2.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -142,7 +143,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         else:
             reward = -5
 
-        reward += dist_reward
+        #currentlly disabled
+        #reward += dist_reward
 
         # Check goal state
         if dist < 0.5:
