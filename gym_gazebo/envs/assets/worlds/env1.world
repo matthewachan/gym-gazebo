@@ -76,10 +76,10 @@
       <real_time_update_rate>0</real_time_update_rate>
     </physics>
     <state world_name='default'>
-      <sim_time>107071 690000000</sim_time>
-      <real_time>143 973054971</real_time>
-      <wall_time>1556599037 745421059</wall_time>
-      <iterations>8861995</iterations>
+      <sim_time>126294 900000000</sim_time>
+      <real_time>30 297214404</real_time>
+      <wall_time>1556660170 753379717</wall_time>
+      <iterations>1922321</iterations>
       <model name='Boundaries'>
         <pose frame=''>2.39768 -2.08635 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -109,22 +109,22 @@
         </link>
       </model>
       <model name='Target'>
-        <pose frame=''>3.58148 -2.57088 0 0 -0 0</pose>
+        <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='green'>
-          <pose frame=''>3.58148 -2.57088 -0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='red'>
-          <pose frame=''>3.58148 -2.57088 -0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='yellow'>
-          <pose frame=''>3.58148 -2.57088 -0 0 -0 0</pose>
+          <pose frame=''>0 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -205,79 +205,6 @@
       <elevation>0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
-    <model name='Target'>
-      <static>1</static>
-      <link name='green'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>0.5</radius>
-              <length>0.05</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Green</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <link name='yellow'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>1</radius>
-              <length>0.04</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Yellow</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <link name='red'>
-        <pose frame=''>0 0 0 0 -0 0</pose>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>1.5</radius>
-              <length>0.03</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Red</name>
-            </script>
-            <ambient>1 1 1 1</ambient>
-          </material>
-          <cast_shadows>0</cast_shadows>
-          <transparency>0</transparency>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>2.03146 -2.98564 0 0 -0 0</pose>
-    </model>
     <model name='Boundaries'>
       <link name='Wall_6'>
         <pose frame=''>-2.4 -3.04601 0 0 -0 0</pose>
@@ -1069,6 +996,79 @@
       <static>1</static>
       <allow_auto_disable>1</allow_auto_disable>
       <pose frame=''>-2 0 0 0 -0 1.5708</pose>
+    </model>
+    <model name='Target'>
+      <static>1</static>
+      <link name='green'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.5</radius>
+              <length>0.05</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
+            <ambient>1 1 1 1</ambient>
+          </material>
+          <cast_shadows>0</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='yellow'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>1</radius>
+              <length>0.04</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+            <ambient>1 1 1 1</ambient>
+          </material>
+          <cast_shadows>0</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='red'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>1.5</radius>
+              <length>0.03</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+            <ambient>1 1 1 1</ambient>
+          </material>
+          <cast_shadows>0</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose frame=''>0 0 0 0 -0 0</pose>
     </model>
   </world>
 </sdf>
