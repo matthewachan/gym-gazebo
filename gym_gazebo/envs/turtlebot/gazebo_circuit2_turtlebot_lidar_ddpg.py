@@ -10,11 +10,12 @@ from gym import utils, spaces
 from gym_gazebo.envs import gazebo_env
 from gym.utils import seeding
 
-from geometry_msgs.msg import Twist, Point
+from geometry_msgs.msg import Twist, Point, Pose
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 import std_msgs.msg # Required for odom Empty message
-from gazebo_msgs.srv import GetModelState
+from gazebo_msgs.srv import GetModelState, SetModelState
+from gazebo_msgs.msg import ModelState
 
 from std_srvs.srv import Empty
 
@@ -33,13 +34,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
         self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+        self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 
         self.reward_range = (-np.inf, np.inf)
 
         # Get Gazebo model info about the target (relative to green circle link)
         self.goal = None
 
-        #self.prev_dist = np.sqrt()
         self.reached_goal = False
 
         self.prev_pose = None
@@ -80,6 +81,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def step(self, action):
 
         self.enable_physics()
+
 
 
         ######################### get the speed  #################################
@@ -149,12 +151,34 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         return np.asarray(state), reward, done, {}
 
+    def validate_target(self, x, y):
+        if (-3 < x < 3 and -3 < y < -1):
+            return False
+        if (-3 < x < 3 and 1 < y < 3):
+            return False
+        if (-1 < x < 1 and 2 < y < 4):
+            return False
+        if (-1 < x < 1 and -4 < y < -2):
+            return False
+        return True
+
     # Reset the episode
     def reset(self):
         # Reset the simulation
+
         self.reset_gazebo()
 
+        timer = time.time()
+        while time.time() - timer < 0.05:
+            pose = Pose()
+            coord = np.random.uniform(-5, 5, 2)
+            while self.validate_target(coord[0], coord[1]) == False:
+                coord = np.random.uniform(-5, 5, 2)
+            pose.position = Point(coord[0], coord[1], 0)
+            self.set_model_state(ModelState('Target', pose, Twist(), ''))
+
         self.enable_physics()
+
 
         # Stop the robot
         self.vel_pub.publish(Twist())
