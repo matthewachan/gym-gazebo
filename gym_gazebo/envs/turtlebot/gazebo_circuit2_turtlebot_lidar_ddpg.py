@@ -25,13 +25,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-<<<<<<< HEAD
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv2.launch")
-=======
         #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
         gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
->>>>>>> refs/remotes/origin/dev
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
