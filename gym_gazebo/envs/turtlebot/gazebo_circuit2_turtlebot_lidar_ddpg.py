@@ -25,8 +25,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv2.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv2.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -76,8 +76,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def get_dist_check(self, turtle_pos):
         move_dist = (self.prev_pose.x - turtle_pos.x)*(self.prev_pose.x - turtle_pos.x) + (self.prev_pose.y - turtle_pos.y)*(self.prev_pose.y - turtle_pos.y)
         move_dist = np.sqrt(move_dist)
-        print("move_dist")
-        print(move_dist)
         if(move_dist > 0.7):
             return 0
         else:
@@ -175,13 +173,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.reset_gazebo()
 
+        pose = Pose()
+        coord = np.random.uniform(-5, 5, 2)
+        while self.validate_target(coord[0], coord[1]) == False:
+            coord = np.random.uniform(-5, 5, 2)
+        pose.position = Point(coord[0], coord[1], 0)
+        print "Target at : " + str(coord[0]) + ", " + str(coord[1])
+
         timer = time.time()
         while time.time() - timer < 0.05:
-            pose = Pose()
-            coord = np.random.uniform(-5, 5, 2)
-            while self.validate_target(coord[0], coord[1]) == False:
-                coord = np.random.uniform(-5, 5, 2)
-            pose.position = Point(coord[0], coord[1], 0)
             self.set_model_state(ModelState('Target', pose, Twist(), ''))
 
         self.enable_physics()
