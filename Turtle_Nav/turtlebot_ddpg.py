@@ -50,7 +50,7 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 1
+    continue_execution = 0
     train_indicator = 1
     #fill this if continue_execution=True
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     state_dim = 22  #num of features in state
 
     EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 10
+    episode_count = 1000 if (train_indicator) else 100
     # episode_count = 1000
     max_steps = 500
     reward = 0
@@ -140,14 +140,14 @@ if __name__ == '__main__':
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
             
-            print(s_t)
+            #print(s_t)
 
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
                 a_t = a_t[0]
                 # print("Exploit: ")
-                print(a_t)
+                #print(a_t)
                 if(np.any(np.isnan(a_t))):
                     print("encountered a nan value by nueral network")
                     exit(0)
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                 lin_vel = np.random.uniform(0, 1, size=1)[0]
                 ang_vel = np.random.uniform(-1, 1, size=1)[0]
                 a_t = [lin_vel, ang_vel]
-                print a_t
+                #print a_t
                 # a_t = np.random.uniform(0,20, size=action_dim)
                 # a_t = np.asarray([lin_vel, ang_vel])
                 # print("Explore: ")
@@ -172,8 +172,8 @@ if __name__ == '__main__':
         
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
             
-            print "rewards: "
-            print r_t
+            # print "rewards: "
+            # print r_t
 
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)

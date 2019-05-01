@@ -24,9 +24,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -73,20 +73,19 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         real_y = delta_y * cos(t) - delta_x * sin(t)
         return real_x,real_y
 
+    #the reward for the robot moving
     def get_dist_check(self, turtle_pos):
         move_dist = (self.prev_pose.x - turtle_pos.x)*(self.prev_pose.x - turtle_pos.x) + (self.prev_pose.y - turtle_pos.y)*(self.prev_pose.y - turtle_pos.y)
         move_dist = np.sqrt(move_dist)
-        if(move_dist > 0.7):
+        if(move_dist > 0.2):
             return 0
         else:
-            return -1 + move_dist
+            return -0.2 + move_dist
 
     # Step the simulation forward in time
     def step(self, action):
 
         self.enable_physics()
-
-
 
         ######################### get the speed  #################################
 
@@ -94,19 +93,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         lin_action = action[0]
         ang_action = action[1]
         
-        # Generated linear velocity action MUST be between 0 and 20
         max_lin_speed = 0.5
-        # lin_vel = (lin_action / 20) * max_lin_speed
         lin_vel = lin_action * max_lin_speed
 
-        # Generated angular velocity action MUST be between 0 and 20
-        max_ang_speed = 1
-        ang_vel = ang_action
-        # ang_vel = (ang_action - 10) * max_ang_speed * 0.1 #from (-0.3 to + 0.3)
+        max_ang_speed = 0.3
+        ang_vel = ang_action * max_ang_speed
 
         vel_cmd = Twist()
         vel_cmd.linear.x = lin_vel
-        vel_cmd.angular.z = ang_vel # action / 3.0
+        vel_cmd.angular.z = ang_vel
         self.vel_pub.publish(vel_cmd)
 
         data = self.lidar_scan()
@@ -129,8 +124,11 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
-        dist_reward = self.get_dist_check(turtle_pos)
+        dist_reward = self.get_dist_check(turtle_pos) * 10
+        angle_diff = np.abs(self.prev_angle - angle[2]) * 10
 
+        #just the z angle is needed
+        self.prev_angle = angle[2]
         self.prev_pose = turtle_pos
 
         ############################ end of distance related rewards ##############################
@@ -144,10 +142,18 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         if not done:
             reward = -delta_dist * 20
         else:
-            reward = -5
+            reward = -30
+
+        # print "angle diff, dist reward, dist reward"
+        # print angle_diff, dist_reward, reward
+        # import IPython; IPython.embed()
 
         #currentlly disabled
-        #reward += dist_reward
+        reward += dist_reward
+
+        reward -= angle_diff
+
+        
 
         # Check goal state
         if dist < 0.5:
@@ -174,9 +180,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reset_gazebo()
 
         pose = Pose()
-        coord = np.random.uniform(-5, 5, 2)
+
+        cord_low_x = -1
+        cord_high_x = 4
+        cord_low_y = -4
+        cord_high_y = 1
+        coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
         while self.validate_target(coord[0], coord[1]) == False:
-            coord = np.random.uniform(-5, 5, 2)
+            coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
+
+        #coord = [-4,4]
         pose.position = Point(coord[0], coord[1], 0)
         print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
@@ -204,6 +217,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
         self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
         self.prev_pose = turtle_pos
+        self.prev_angle = 0
         data = self.lidar_scan()
 
         self.pause_physics()
