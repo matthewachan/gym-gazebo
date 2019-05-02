@@ -24,8 +24,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
@@ -124,8 +124,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
-        dist_reward = self.get_dist_check(turtle_pos) * 10
-        angle_diff = np.abs(self.prev_angle - angle[2]) * 10
+        dist_reward = self.get_dist_check(turtle_pos)
+        angle_diff = np.abs(self.prev_angle - angle[2])
 
         #just the z angle is needed
         self.prev_angle = angle[2]
@@ -140,9 +140,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Set reward
         if not done:
-            reward = -delta_dist * 20
+            reward = -delta_dist * 3
         else:
-            reward = -30
+            reward = -70
 
         # print "angle diff, dist reward, dist reward"
         # print angle_diff, dist_reward, reward
@@ -157,11 +157,93 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # Check goal state
         if dist < 0.5:
-            reward = 100
-            done = True
+            reward += 500
+            #done = True
+            #instead, set it to a new state
+            self.reset_target()
+            self.enable_physics()
+            self.vel_pub.publish(Twist())
+            self.reset_param()
+            self.pause_physics()
+
 
         return np.asarray(state), reward, done, {}
 
+
+
+    def reset_target(self):
+        pose = Pose()
+
+        #for debug_map
+        # cord_low_x = -1
+        # cord_high_x = 4
+        # cord_low_y = -4
+        # cord_high_y = 1
+
+        #for env2
+        cord_low_x = -4.5
+        cord_high_x = 4.5
+        cord_low_y = -4.5
+        cord_high_y = 4.5
+
+        coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
+        while self.validate_target(coord[0], coord[1]) == False:
+            coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
+
+        #coord = [3,-3]
+        pose.position = Point(coord[0], coord[1], 0)
+        print "Target at : " + str(coord[0]) + ", " + str(coord[1])
+
+        timer = time.time()
+        while time.time() - timer < 0.05:
+            self.set_model_state(ModelState('Target', pose, Twist(), ''))
+
+    #this function needs to be called with physics enabled
+    def reset_param(self):
+        # Get the Target model's position relative to the ground plane
+        self.goal = self.get_model_state('Target', 'ground_plane').pose.position     
+
+        # Retrieve the current state 
+        odom = self.get_odom()
+        turtle_pos = odom.pose.pose.position
+        quaternion =odom.pose.pose.orientation
+        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
+        angle = tf.transformations.euler_from_quaternion(explicit_quat)
+        self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
+        self.prev_pose = turtle_pos
+        self.prev_angle = angle[2]
+
+    # Reset the episode
+    def reset(self):
+        # Reset the simulation
+
+        self.reset_gazebo()
+
+        #reset the position of the target
+        self.reset_target()
+
+        self.enable_physics()
+
+        # Stop the robot
+        self.vel_pub.publish(Twist())
+
+        # Reset Turtlebot's odometry
+        self.reset_odom()
+
+        #reset all the parameters
+        self.reset_param()
+
+        data = self.lidar_scan()
+
+        self.pause_physics()
+
+        stx, sty = self.get_goal(self.prev_pose.x, self.prev_pose.y, self.prev_angle)
+        state, done = self.check_collision(data)
+        state += [stx, sty]
+
+        return np.asarray(state)
+
+    #this is just for env1
     def validate_target(self, x, y):
         if (-3 < x < 3 and -3 < y < -1):
             return False
@@ -172,60 +254,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         if (-1 < x < 1 and -4 < y < -2):
             return False
         return True
-
-    # Reset the episode
-    def reset(self):
-        # Reset the simulation
-
-        self.reset_gazebo()
-
-        pose = Pose()
-
-        cord_low_x = -1
-        cord_high_x = 4
-        cord_low_y = -4
-        cord_high_y = 1
-        coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
-        while self.validate_target(coord[0], coord[1]) == False:
-            coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
-
-        #coord = [-4,4]
-        pose.position = Point(coord[0], coord[1], 0)
-        print "Target at : " + str(coord[0]) + ", " + str(coord[1])
-
-        timer = time.time()
-        while time.time() - timer < 0.05:
-            self.set_model_state(ModelState('Target', pose, Twist(), ''))
-
-        self.enable_physics()
-
-
-        # Stop the robot
-        self.vel_pub.publish(Twist())
-
-        # Get the Target model's position relative to the ground plane
-        self.goal = self.get_model_state('Target', 'ground_plane').pose.position
-        # Reset Turtlebot's odometry
-        self.reset_odom()
-
-        # Retrieve the current state 
-        odom = self.get_odom()
-        turtle_pos = odom.pose.pose.position
-        quaternion =odom.pose.pose.orientation
-        explicit_quat = [quaternion.x, quaternion.y, quaternion.z, quaternion.w]
-        angle = tf.transformations.euler_from_quaternion(explicit_quat)
-        stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
-        self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
-        self.prev_pose = turtle_pos
-        self.prev_angle = 0
-        data = self.lidar_scan()
-
-        self.pause_physics()
-
-        state, done = self.check_collision(data)
-        state += [stx, sty]
-
-        return np.asarray(state)
 
 ###################
 # EVENT CALLBACKS #
@@ -279,6 +307,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     # Reset odometry (required when calling reset_gazebo)
     def reset_odom(self):
+        #could set random pose here
+
         reset_odom = rospy.Publisher('/mobile_base/commands/reset_odometry', std_msgs.msg.Empty, queue_size=10)
         timer = time.time()
         # Takes some time to process Empty message and reset odometry

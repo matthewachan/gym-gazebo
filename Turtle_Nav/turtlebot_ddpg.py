@@ -50,8 +50,8 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 0
-    train_indicator = 1
+    continue_execution = 1
+    train_indicator = 0
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
