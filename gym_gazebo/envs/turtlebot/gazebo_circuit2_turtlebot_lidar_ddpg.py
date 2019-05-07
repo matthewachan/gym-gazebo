@@ -24,9 +24,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboTest.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -37,6 +37,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         self.set_model_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 
+        self.direction = 1
         self.reward_range = (-np.inf, np.inf)
 
         # Get Gazebo model info about the target (relative to green circle link)
@@ -46,6 +47,21 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.prev_pose = None
         self._seed()
+
+    def move_dynamic_obstacles(self):
+        wall1 = self.get_model_state('Wooden_Wall_Med_0_clone', 'ground_plane').pose
+
+        increment = 0.05 * self.direction
+        if (wall1.position.y > 3 and self.direction == 1 or wall1.position.y < -3 and self.direction == -1):
+            self.direction *= -1
+
+        wall1.position.y += increment
+
+        timer = time.time()
+        while time.time() - timer < 0.05:
+            self.set_model_state(ModelState('Wooden_Wall_Med_0_clone', wall1, Twist(), ''))
+
+
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -86,6 +102,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def step(self, action):
 
         self.enable_physics()
+        # self.move_dynamic_obstacles()
 
         ######################### get the speed  #################################
 
@@ -160,13 +177,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Check goal state
         if dist < 0.5:
             reward += 500
-            done = True
+            # done = True
             #instead, set it to a new state
-            # self.reset_target()
-            # self.enable_physics()
-            # self.vel_pub.publish(Twist())
-            # self.reset_param()
-            # self.pause_physics()
+            self.reset_target()
+            self.enable_physics()
+            self.vel_pub.publish(Twist())
+            self.reset_param()
+            self.pause_physics()
 
         print("reward: " + str(reward))
         return np.asarray(state), reward, done, {}
@@ -192,7 +209,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         while self.validate_target(coord[0], coord[1]) == False:
             coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
 
-        coord = [3,-3]
+        # coord = [3,-3]
         pose.position = Point(coord[0], coord[1], 0)
         print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
