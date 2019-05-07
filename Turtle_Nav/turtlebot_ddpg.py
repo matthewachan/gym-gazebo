@@ -63,7 +63,7 @@ if __name__ == '__main__':
     LRC = 0.001     #Lerning rate for Critic
 
     action_dim = 2  #angular vel + linear vel
-    state_dim = 14  #num of features in state
+    state_dim = 24  #num of features in state
 
     EXPLORE = 200.0*50
     episode_count = 1000 if (train_indicator) else 100
@@ -87,9 +87,10 @@ if __name__ == '__main__':
     critic = CriticNetwork(sess, state_dim, action_dim, BATCH_SIZE, TAU, LRC)
     buff = ReplayBuffer(BUFFER_SIZE)    #Create replay buffer
 
-    #Now load the weight
-    print("Now we load the weight")
+    
     if continue_execution:
+        #Now load the weight
+        print("Now we load the weight")
         try:
             actor.model.load_weights("actormodel.h5")
             critic.model.load_weights("criticmodel.h5")

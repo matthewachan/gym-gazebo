@@ -24,8 +24,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     def __init__(self):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
+        #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
         #gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
@@ -62,7 +62,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
                 lidar_data[i] = MAX_DIST
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return list(lidar_data)[0::2],done
+        return list(lidar_data),done
 
     # Input: the position of the robot
     # theta = 0 => don't need to transform
@@ -124,8 +124,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
-        dist_reward = self.get_dist_check(turtle_pos)
-        angle_diff = np.abs(self.prev_angle - angle[2])
+        dist_reward = self.get_dist_check(turtle_pos) * 5
+        angle_diff = np.abs(self.prev_angle - angle[2]) * 5
 
         #just the z angle is needed
         self.prev_angle = angle[2]
@@ -136,13 +136,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
-        print("laser reading:")
-        print state
+        # print("laser reading:")
+        # print state
         state += [stx, sty]
         state += [lin_action, ang_action]
         # Set reward
         if not done:
-            reward = -delta_dist * 3
+            reward = -delta_dist * 15
         else:
             reward = -70
 
@@ -160,15 +160,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Check goal state
         if dist < 0.5:
             reward += 500
-            #done = True
+            done = True
             #instead, set it to a new state
-            self.reset_target()
-            self.enable_physics()
-            self.vel_pub.publish(Twist())
-            self.reset_param()
-            self.pause_physics()
+            # self.reset_target()
+            # self.enable_physics()
+            # self.vel_pub.publish(Twist())
+            # self.reset_param()
+            # self.pause_physics()
 
-
+        print("reward: " + str(reward))
         return np.asarray(state), reward, done, {}
 
 
