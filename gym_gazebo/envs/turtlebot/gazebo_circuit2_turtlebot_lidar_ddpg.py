@@ -62,7 +62,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
                 lidar_data[i] = MAX_DIST
             if (min_range > data.ranges[i] > 0):
                 done = True
-        return list(lidar_data),done
+        return list(lidar_data)[0::2],done
 
     # Input: the position of the robot
     # theta = 0 => don't need to transform
@@ -136,8 +136,10 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
+        print("laser reading:")
+        print state
         state += [stx, sty]
-
+        state += [lin_action, ang_action]
         # Set reward
         if not done:
             reward = -delta_dist * 3
@@ -190,7 +192,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         while self.validate_target(coord[0], coord[1]) == False:
             coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
 
-        #coord = [3,-3]
+        coord = [3,-3]
         pose.position = Point(coord[0], coord[1], 0)
         print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
@@ -212,6 +214,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.prev_dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
         self.prev_pose = turtle_pos
         self.prev_angle = angle[2]
+
 
     # Reset the episode
     def reset(self):
@@ -240,6 +243,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         stx, sty = self.get_goal(self.prev_pose.x, self.prev_pose.y, self.prev_angle)
         state, done = self.check_collision(data)
         state += [stx, sty]
+        state += [0, 0]
 
         return np.asarray(state)
 
