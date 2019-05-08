@@ -50,8 +50,12 @@ if __name__ == '__main__':
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = 0
-    train_indicator = 1
+    num_of_collision = 0
+    total_distance = 0
+    total_minimum_distance = 0
+
+    continue_execution = 1
+    train_indicator = 0
     #fill this if continue_execution=True
 
     #Parameters for the ddpg agent
@@ -134,7 +138,7 @@ if __name__ == '__main__':
         total_reward = 0.
 
         done = False
-
+        cur_distance = 0
         while not done:
             loss = 0 
             epsilon -= 0.3 / EXPLORE
@@ -167,8 +171,9 @@ if __name__ == '__main__':
                 # print(a_t)
             # print("action: ")
             # print(a_t)
-            ob, r_t, done, info = env.step(a_t)
-
+            ob, r_t, done, inf = env.step(a_t)
+            collision, distance = env.get_stats()
+            cur_distance += distance
             s_t1 = np.array(ob)
         
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
@@ -209,6 +214,14 @@ if __name__ == '__main__':
         
             step += 1
             if done:
+                if(collision):
+                    num_of_collision+=1
+                else:
+                    total_distance += cur_distance
+                    total_minimum_distance += 22.7726
+
+                print(num_of_collision, total_distance, total_minimum_distance)
+
                 if (i)%100==0:
                     #save model weights and monitoring data every 100 epochs.
                     env._flush()

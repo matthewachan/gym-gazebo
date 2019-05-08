@@ -25,8 +25,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Specify the map to load
         #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
-        gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
-        # gazebo_env.GazeboEnv.__init__(self, "GazeboTest.launch")
+        # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
+        gazebo_env.GazeboEnv.__init__(self, "GazeboTest.launch")
 
         self.vel_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=5)
 
@@ -47,6 +47,16 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         self.prev_pose = None
         self._seed()
+
+        self.target_list = [
+                [-4, 3],
+                [-3, -4],
+                [4, -4],
+                [2, 1.5],
+                [0, 0]
+        ]
+        self.cur_index = 0
+        self.total_dist = 0
 
     def move_dynamic_obstacles(self):
         wall1 = self.get_model_state('Wooden_Wall_Med_0_clone', 'ground_plane').pose
@@ -94,15 +104,15 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         move_dist = (self.prev_pose.x - turtle_pos.x)*(self.prev_pose.x - turtle_pos.x) + (self.prev_pose.y - turtle_pos.y)*(self.prev_pose.y - turtle_pos.y)
         move_dist = np.sqrt(move_dist)
         if(move_dist > 0.2):
-            return 0
+            return 0, move_dist
         else:
-            return -0.2 + move_dist
+            return -0.2 + move_dist, move_dist
 
     # Step the simulation forward in time
     def step(self, action):
 
         self.enable_physics()
-        # self.move_dynamic_obstacles()
+        #self.move_dynamic_obstacles()
 
         ######################### get the speed  #################################
 
@@ -141,7 +151,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
-        dist_reward = self.get_dist_check(turtle_pos) * 5
+        dist_reward, move_dist = self.get_dist_check(turtle_pos)
+        self.total_dist+=move_dist
+        dist_reward =  dist_reward * 5
         angle_diff = np.abs(self.prev_angle - angle[2]) * 5
 
         #just the z angle is needed
@@ -157,11 +169,13 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # print state
         state += [stx, sty]
         state += [lin_action, ang_action]
+        self.collide = False
         # Set reward
         if not done:
             reward = -delta_dist * 15
         else:
             reward = -70
+            self.collide = True
 
         # print "angle diff, dist reward, dist reward"
         # print angle_diff, dist_reward, reward
@@ -177,6 +191,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         # Check goal state
         if dist < 0.5:
             reward += 500
+            if(self.cur_index == len(self.target_list)):
+                done = True
+                return np.asarray(state), reward, done, {}
             # done = True
             #instead, set it to a new state
             self.reset_target()
@@ -188,6 +205,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         print("reward: " + str(reward))
         return np.asarray(state), reward, done, {}
 
+    def get_stats(self):
+        return self.collide, self.total_dist
 
 
     def reset_target(self):
@@ -210,6 +229,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
 
         # coord = [3,-3]
+        coord = self.target_list[self.cur_index]
+        self.cur_index+=1
         pose.position = Point(coord[0], coord[1], 0)
         print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
@@ -261,6 +282,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         state, done = self.check_collision(data)
         state += [stx, sty]
         state += [0, 0]
+        self.cur_index = 0
+        self.total_dist = 0
 
         return np.asarray(state)
 
