@@ -46,9 +46,12 @@ def print_stats(data):
     total_time = 0
     total_steps = 0
     min_dist = data[0][2]
+
+    targets_hit = 0
     for stat in data:
         if (stat[0] == True):
             num_collisions += 1
+            targets_hit += stat[5]
         else:
             num_success += 1
             total_dist += stat[1]
@@ -68,6 +71,7 @@ def print_stats(data):
     print "Collision rate: " + str(num_collisions)
     print "Timed out rate: " + str(100 - len(data))
     print "Distance efficiency: " + str(avg_dist / min_dist)
+    print "Average targets hit in collision cases: " + str(targets_hit / num_collisions)
 
 
 if __name__ == '__main__':
@@ -172,7 +176,7 @@ if __name__ == '__main__':
 
             ob, r_t, done, inf = env.step(a_t)
             step += 1
-            collision, distance = env.get_stats()
+            collision, distance, targets_hit = env.get_stats()
             cur_distance += distance
             s_t1 = np.array(ob)
         
@@ -214,8 +218,8 @@ if __name__ == '__main__':
                     num_of_collision+=1
 
 
-                stats.append([collision, cur_distance, minimum_distance, step, time.time() - start_time])
-                print(collision, cur_distance, minimum_distance, step, time.time() - start_time)
+                stats.append([collision, cur_distance, minimum_distance, step, time.time() - start_time, targets_hit])
+                print(collision, cur_distance, minimum_distance, step, time.time() - start_time, targets_hit)
 
                 if (i)%100==0:
                     # Save model weights and monitoring data every 100 epochs.
