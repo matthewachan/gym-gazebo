@@ -21,7 +21,6 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
 import tensorflow as tf
-#from keras.engine.training import collect_trainable_weights
 import json
 
 from ReplayBuffer import ReplayBuffer
@@ -41,24 +40,14 @@ def clear_monitor_files(training_dir):
         os.unlink(file)
 
 if __name__ == '__main__':
-
-    
-
-    #REMEMBER!: turtlebot_nn_setup.bash must be executed.
-    #replace the action with the correct one
     env = gym.make('GazeboCircuit2TurtlebotLidarDdpg-v0')
     outdir = '/tmp/gazebo_gym_experiments/'
     plotter = liveplot.LivePlot(outdir)
 
-    num_of_collision = 0
-    total_distance = 0
-    total_minimum_distance = 0
-
     continue_execution = 1
     train_indicator = 0
-    #fill this if continue_execution=True
 
-    #Parameters for the ddpg agent
+    #Parameters for DDPG agent
     BUFFER_SIZE = 200000
     BATCH_SIZE = 32
     GAMMA = 0.99
@@ -66,19 +55,16 @@ if __name__ == '__main__':
     LRA = 0.0001    #Learning rate for Actor
     LRC = 0.001     #Lerning rate for Critic
 
-    action_dim = 2  #angular vel + linear vel
-    state_dim = 24  #num of features in state
+    action_dim = 2  # Angular vel + Linear vel
+    state_dim = 24  # Num of features in state
 
     EXPLORE = 200.0*50
     episode_count = 1000 if (train_indicator) else 100
-    # episode_count = 1000
     max_steps = 500
     reward = 0
     done = False
-    step = 0
     epsilon = 0.3 if (train_indicator) else 0.0
     indicator = 0
-
 
     #Tensorflow GPU optimization
     config = tf.ConfigProto()
@@ -104,7 +90,6 @@ if __name__ == '__main__':
         except:
             print("Cannot find the weight")
 
-    #maybe delete this?
     if continue_execution:
         clear_monitor_files(outdir)
 
@@ -112,23 +97,14 @@ if __name__ == '__main__':
     env = gym.wrappers.Monitor(env, outdir,force=not continue_execution, resume=continue_execution)
 
 
-    start_time = time.time()
+    num_of_collision = 0
+    minimum_distance = 22.7726
+    stats = []
 
-    #potentially, we can use multi-threading here
-
-    # for i in range(10):
-    #     ob = env.reset()
-
-    #     while not done:
-    #         s_t = np.array(ob)
-    #         a_t = np.random.uniform(0,20, size=action_dim)
-    #         ob, r_t, done, info = env.step(a_t)
-    #         s_t1 = np.array(ob)
-    #         buff.add(s_t, a_t[0], r_t, s_t1, done)  
-
-
-    #The training loop
+    # Training loop
     for i in range(episode_count):
+        start_time = time.time()
+        episode_duration = 0
 
         # print("Episode : " + str(i) + " Replay Buffer " + str(buff.count()))
 
@@ -139,22 +115,20 @@ if __name__ == '__main__':
 
         done = False
         cur_distance = 0
+        step = 0
         while not done:
             loss = 0 
-            epsilon -= 0.3 / EXPLORE
+            # epsilon -= 0.3 / EXPLORE
             a_t = np.zeros([1,action_dim])
             noise_t = np.zeros([1,action_dim])
             
-            #print(s_t)
-
             if np.random.random() > epsilon:
                 a_type = "Exploit"
                 a_t = actor.model.predict(s_t.reshape(1, s_t.shape[0]))*1 #rescalet
                 a_t = a_t[0]
-                # print("Exploit: ")
-                #print(a_t)
+
                 if(np.any(np.isnan(a_t))):
-                    print("encountered a nan value by nueral network")
+                    print("Encountered a nan value by nueral network")
                     exit(0)
                     lin_vel = np.random.uniform(0, 1, size=1)[0]
                     ang_vel = np.random.uniform(-1, 1, size=1)[0]
@@ -164,24 +138,15 @@ if __name__ == '__main__':
                 lin_vel = np.random.uniform(0, 1, size=1)[0]
                 ang_vel = np.random.uniform(-1, 1, size=1)[0]
                 a_t = [lin_vel, ang_vel]
-                #print a_t
-                # a_t = np.random.uniform(0,20, size=action_dim)
-                # a_t = np.asarray([lin_vel, ang_vel])
-                # print("Explore: ")
-                # print(a_t)
-            # print("action: ")
-            # print(a_t)
+
             ob, r_t, done, inf = env.step(a_t)
+            step += 1
             collision, distance = env.get_stats()
             cur_distance += distance
-            print cur_distance
             s_t1 = np.array(ob)
         
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
             
-            # print "rewards: "
-            # print r_t
-
             #Do the batch update
             batch = buff.getBatch(BATCH_SIZE)
             states = np.asarray([e[0] for e in batch])
@@ -191,7 +156,6 @@ if __name__ == '__main__':
             dones = np.asarray([e[4] for e in batch])
             y_t = np.asarray([e[2] for e in batch])
 
-            #print(actor.target_model.predict(new_states))
             target_q_values = critic.target_model.predict([new_states, actor.target_model.predict(new_states)])  
 
             for k in range(len(batch)):
@@ -213,18 +177,17 @@ if __name__ == '__main__':
         
             # print("Episode", i, "Step", step, "Action", a_type, "Reward", r_t, "Loss", loss, "Epsilon", epsilon)
         
-            step += 1
-            if done:
+            if done and step < max_steps - 1:
+                print "Step: " + str(step)
                 if(collision):
                     num_of_collision+=1
-                else:
-                    total_distance += cur_distance
-                    total_minimum_distance += 22.7726
 
-                print(num_of_collision, total_distance, total_minimum_distance)
+
+                stats.append([collision, cur_distance, minimum_distance, step, time.time() - start_time])
+                print(collision, cur_distance, minimum_distance, step, time.time() - start_time)
 
                 if (i)%100==0:
-                    #save model weights and monitoring data every 100 epochs.
+                    # Save model weights and monitoring data every 100 epochs.
                     env._flush()
 
         if i % 100 == 0:
@@ -236,8 +199,9 @@ if __name__ == '__main__':
                 actor.model.save_weights("actormodel.h5", overwrite=True)
                 critic.model.save_weights("criticmodel.h5", overwrite=True)
 
-        print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
+        # print("TOTAL REWARD @ " + str(i) +"-th Episode  : Reward " + str(total_reward))
         print("Total Step: " + str(step))
         print("")
 
+    print stats
     env.close()

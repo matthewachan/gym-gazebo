@@ -23,7 +23,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
     def __init__(self):
         # Specify the map to load
-        #gazebo_env.GazeboEnv.__init__(self, "GazeboCircuit2TurtlebotLidar_v0.launch")
         # gazebo_env.GazeboEnv.__init__(self, "GazeboDebug_v0.launch")
         # gazebo_env.GazeboEnv.__init__(self, "GazeboEnv1.launch")
         gazebo_env.GazeboEnv.__init__(self, "GazeboTest.launch")
@@ -55,6 +54,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
                 [2, 1.5],
                 [0, 0]
         ]
+        
         self.cur_index = 0
         self.total_dist = 0
 
@@ -145,14 +145,12 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         
         stx, sty = self.get_goal(turtle_pos.x, turtle_pos.y, angle[2])
         dist = np.sqrt(np.power(turtle_pos.x - self.goal.x, 2) + np.power(turtle_pos.y - self.goal.y, 2))
-        #print turtle_pos
 
         # Change in distance from the goal
         delta_dist = dist - self.prev_dist
         self.prev_dist = dist
 
         dist_reward, move_dist = self.get_dist_check(turtle_pos)
-        # print str(move_dist)
         # + " " + str(turtle_pos) + " " + str(self.prev_pose)
         self.total_dist = move_dist
         dist_reward =  dist_reward * 5
@@ -167,8 +165,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.pause_physics()
 
         state, done = self.check_collision(data)
-        # print("laser reading:")
-        # print state
         state += [stx, sty]
         state += [lin_action, ang_action]
         self.collide = False
@@ -179,8 +175,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             reward = -70
             self.collide = True
 
-        # print "angle diff, dist reward, dist reward"
-        # print angle_diff, dist_reward, reward
         # import IPython; IPython.embed()
 
         #currentlly disabled
@@ -204,7 +198,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             self.reset_param()
             self.pause_physics()
 
-        # print("reward: " + str(reward))
         return np.asarray(state), reward, done, {}
 
     def get_stats(self):
@@ -236,7 +229,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         coord = self.target_list[self.cur_index]
         self.cur_index += 1
         pose.position = Point(coord[0], coord[1], 0)
-        print "Target at : " + str(coord[0]) + ", " + str(coord[1])
+        # print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
         timer = time.time()
         while time.time() - timer < 0.05:
