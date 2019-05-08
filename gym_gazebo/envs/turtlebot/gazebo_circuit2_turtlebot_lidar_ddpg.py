@@ -229,6 +229,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             coord = [np.random.uniform(cord_low_x, cord_high_x), np.random.uniform(cord_low_y, cord_high_y)]
 
         # coord = [3,-3]
+        # print(self.cur_index)
+        # print(len(self.target_list))
         coord = self.target_list[self.cur_index]
         self.cur_index+=1
         pose.position = Point(coord[0], coord[1], 0)
@@ -257,7 +259,8 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
     # Reset the episode
     def reset(self):
         # Reset the simulation
-
+        self.cur_index = 0
+        self.total_dist = 0
         self.reset_gazebo()
 
         #reset the position of the target
@@ -282,8 +285,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         state, done = self.check_collision(data)
         state += [stx, sty]
         state += [0, 0]
-        self.cur_index = 0
-        self.total_dist = 0
+        
 
         return np.asarray(state)
 
