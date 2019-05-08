@@ -90,7 +90,7 @@ if __name__ == '__main__':
     state_dim = 24  # Num of features in state
 
     EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 10
+    episode_count = 1000 if (train_indicator) else 100
     max_steps = 500
     reward = 0
     done = False
