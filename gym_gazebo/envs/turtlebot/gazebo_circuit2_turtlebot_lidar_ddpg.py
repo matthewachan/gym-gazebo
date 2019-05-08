@@ -152,7 +152,9 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.prev_dist = dist
 
         dist_reward, move_dist = self.get_dist_check(turtle_pos)
-        self.total_dist+=move_dist
+        # print str(move_dist)
+        # + " " + str(turtle_pos) + " " + str(self.prev_pose)
+        self.total_dist = move_dist
         dist_reward =  dist_reward * 5
         angle_diff = np.abs(self.prev_angle - angle[2]) * 5
 
@@ -202,7 +204,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
             self.reset_param()
             self.pause_physics()
 
-        print("reward: " + str(reward))
+        # print("reward: " + str(reward))
         return np.asarray(state), reward, done, {}
 
     def get_stats(self):
@@ -230,7 +232,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
 
         # coord = [3,-3]
         coord = self.target_list[self.cur_index]
-        self.cur_index+=1
+        self.cur_index += 1
         pose.position = Point(coord[0], coord[1], 0)
         print "Target at : " + str(coord[0]) + ", " + str(coord[1])
 
@@ -261,6 +263,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         self.reset_gazebo()
 
         #reset the position of the target
+        self.cur_index = 0
         self.reset_target()
 
         self.enable_physics()
@@ -282,7 +285,6 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         state, done = self.check_collision(data)
         state += [stx, sty]
         state += [0, 0]
-        self.cur_index = 0
         self.total_dist = 0
 
         return np.asarray(state)

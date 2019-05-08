@@ -174,6 +174,7 @@ if __name__ == '__main__':
             ob, r_t, done, inf = env.step(a_t)
             collision, distance = env.get_stats()
             cur_distance += distance
+            print cur_distance
             s_t1 = np.array(ob)
         
             buff.add(s_t, a_t, r_t, s_t1, done)      #Add replay buffer
