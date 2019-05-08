@@ -39,6 +39,37 @@ def clear_monitor_files(training_dir):
         print(file)
         os.unlink(file)
 
+def print_stats(data):
+    num_collisions = 0
+    num_success = 0
+    total_dist = 0
+    total_time = 0
+    total_steps = 0
+    min_dist = data[0][2]
+    for stat in data:
+        if (stat[0] == True):
+            num_collisions += 1
+        else:
+            num_success += 1
+            total_dist += stat[1]
+            total_steps += stat[3]
+            total_time += stat[4]
+
+
+    num_timed_out = 100 - len(data)
+    avg_dist = total_dist / num_success
+    avg_steps = total_steps / num_success
+    avg_time = total_time / num_success
+
+    print "Average distance traveled: " + str(avg_dist)
+    print "Average time steps: " + str(avg_steps)
+    print "Average time: " + str(avg_time)
+    print "Success rate: " + str(num_success)
+    print "Collision rate: " + str(num_collisions)
+    print "Timed out rate: " + str(100 - len(data))
+    print "Distance efficiency: " + str(avg_dist / min_dist)
+
+
 if __name__ == '__main__':
     env = gym.make('GazeboCircuit2TurtlebotLidarDdpg-v0')
     outdir = '/tmp/gazebo_gym_experiments/'
@@ -59,7 +90,7 @@ if __name__ == '__main__':
     state_dim = 24  # Num of features in state
 
     EXPLORE = 200.0*50
-    episode_count = 1000 if (train_indicator) else 100
+    episode_count = 1000 if (train_indicator) else 10
     max_steps = 500
     reward = 0
     done = False
@@ -203,5 +234,5 @@ if __name__ == '__main__':
         print("Total Step: " + str(step))
         print("")
 
-    print stats
+    print_stats(stats)
     env.close()
