@@ -201,7 +201,7 @@ class GazeboCircuit2TurtlebotLidarDdpgEnv(gazebo_env.GazeboEnv):
         return np.asarray(state), reward, done, {}
 
     def get_stats(self):
-        return self.collide, self.total_dist
+        return self.collide, self.total_dist, self.cur_index + 1
 
 
     def reset_target(self):
